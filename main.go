@@ -67,7 +67,7 @@ func main() {
 		var msg string
 
 		// Собираем сообщение в зависимости есть ли у нового пользователя username
-		warning := "Привет! Это защита от спама. У вас есть 30 секунд нажать на кнопку. Иначе вы будете забанены!"
+		warning := "Это защита от спама. У вас есть 30 секунд нажать на кнопку. Иначе вы будете забанены!"
 		if username != "" {
 			msg = fmt.Sprintf("@%v\n"+warning, username)
 		} else {
@@ -104,7 +104,7 @@ func main() {
 			тогда снимаем с него рестрикт и выходим из цикла
 			 */
 			if temp == m.UserJoined.ID {
-				msgCheckPassed := fmt.Sprintf("@%v\nВы прошли проверку. Ознакомиться с правилами группы можно по [ссылке](https://github.com/tg-ntwrk/ntwrk-rules/blob/master/README.md).", u)
+				msgCheckPassed := fmt.Sprintf("@%v\nДобро пожаловать!", u)
 				b.Edit(botMsg, msgCheckPassed, tb.ParseMode(tb.ModeMarkdown), tb.NoPreview)
 				log.Printf("Пользователь прошел проверку: %v", m.UserJoined)
 				newChatMember := tb.ChatMember{User: m.UserJoined, RestrictedUntil: tb.Forever(), Rights: tb.Rights{CanSendMessages: true}}
@@ -133,3 +133,4 @@ func main() {
 	log.Print("Бот запущен!")
 	b.Start()
 }
+
