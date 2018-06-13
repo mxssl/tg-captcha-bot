@@ -1,136 +1,68 @@
 package main
 
 import (
-	"fmt"
 	tb "gopkg.in/tucnak/telebot.v2"
 	"log"
 	"os"
-	"runtime"
 	"time"
 )
 
-// Токен для бота получаем из переменной окружения
-var tgToken = os.Getenv("TGTOKEN")
+var passedUsers = make(map[int]struct{})
+var bot *tb.Bot
 
 func main() {
-	// Настройки обращения к API telegram
-	b, err := tb.NewBot(tb.Settings{
-		Token:  tgToken,
+	var err error
+	bot, err = tb.NewBot(tb.Settings{
+		Token:  os.Getenv("TGTOKEN"),
 		Poller: &tb.LongPoller{Timeout: 10 * time.Second},
 	})
-
-	// Если подключиться к API telegram не удалось, тогда крашимся
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
 
-	// Описываем кнопку, которая будет отображаться новому посетителю
-	inlineBtn := tb.InlineButton{
-		Unique: "sad_moon",
-		Text:   "Я не спамер!",
-	}
-	inlineKeys := [][]tb.InlineButton{
-		[]tb.InlineButton{inlineBtn},
-	}
+	bot.Handle(tb.OnUserJoined, challengeUser)
+	bot.Handle(tb.OnCallback, passChallenge)
 
-	// Переменная, в которую будет записываться ID того, кто нажал на кнопку
-	var temp int
-
-	// Делаем callback на нажатие кнопки и записываем ID того, кто ее нажал
-	b.Handle(&inlineBtn, func(c *tb.Callback) {
-		temp = c.Sender.ID
-		b.Respond(c, &tb.CallbackResponse{Text: "Доступ разрешен!"})
-	})
-
-	/*
-	Основная функция с логикой работы бота
-	Задача проверить, что тот кто нажал на кнопку == новому посетителю
-	*/
-	go b.Handle(tb.OnUserJoined, func(m *tb.Message) {
-		// Обнуляем значение переменной для ID того, кто нажал на кнопку
-		temp = 0
-
-		// Вешаем на каждого нового пользователя рестрикт на отправку сообщений
-		newChatMember := tb.ChatMember{User: m.UserJoined,
-		RestrictedUntil: tb.Forever(),
-		Rights: tb.Rights{CanSendMessages: false},
-		}
-		b.Restrict(m.Chat, &newChatMember)
-		log.Printf("Присоединился пользователь: %v", m.UserJoined)
-
-		// Запоминаем инфо о новом посетителе
-		username := m.UserJoined.Username
-		firstname := m.UserJoined.FirstName
-
-		// Переменная, в которую будет записываться собранное сообщение с приветствием
-		var msg string
-
-		// Собираем сообщение в зависимости есть ли у нового пользователя username
-		warning := "Это защита от спама. У вас есть 30 секунд нажать на кнопку. Иначе вы будете забанены!"
-		if username != "" {
-			msg = fmt.Sprintf("@%v\n"+warning, username)
-		} else {
-			msg = fmt.Sprintf("%v\n"+warning, firstname)
-		}
-
-		// Отправляем собранное сообщение в чат
-		botMsg, _ := b.Send(m.Chat, msg, &tb.ReplyMarkup{InlineKeyboard: inlineKeys})
-
-		// Переменная назначается в зависимости есть ли у нового посетителя username
-		var u string
-		if username != "" {
-			u = username
-		} else {
-			u = firstname
-		}
-
-		/*
-		30 секунд ждем нажатия нового посетителя на кнопку.
-		Если нажатия не произошло вешаем бан
-		*/
-		var idx int
-		for start := time.Now(); ; {
-			if idx%30 == 0 {
-				if time.Since(start) > 30*time.Second {
-					break
-				}
-			}
-
-			idx++
-
-			/*
-			Если тот, кто нажал на кнопку == новый посетитель,
-			тогда снимаем с него рестрикт и выходим из цикла
-			 */
-			if temp == m.UserJoined.ID {
-				msgCheckPassed := fmt.Sprintf("@%v\nДобро пожаловать!", u)
-				b.Edit(botMsg, msgCheckPassed, tb.ParseMode(tb.ModeMarkdown), tb.NoPreview)
-				log.Printf("Пользователь прошел проверку: %v", m.UserJoined)
-				newChatMember := tb.ChatMember{User: m.UserJoined, RestrictedUntil: tb.Forever(), Rights: tb.Rights{CanSendMessages: true}}
-				b.Promote(m.Chat, &newChatMember)
-				return
-			}
-		}
-
-		// Если в течении 30ти секунд нажатия не произошло, баним нового посетителя
-		chatMember := tb.ChatMember{User: m.UserJoined, RestrictedUntil: tb.Forever()}
-		b.Ban(m.Chat, &chatMember)
-		banMsg := fmt.Sprintf("@%v не прошел проверку", u)
-		b.Edit(botMsg, banMsg)
-		log.Printf("Пользователь забанен: %v", m.UserJoined)
-	})
-
-	// Команда для проверки работоспособности бота
-	b.Handle("/healthz", func(m *tb.Message) {
-		runtimeVer := runtime.Version()
-		verMsg := fmt.Sprintf(`Я здоров!
-Версия Go: %v`, runtimeVer)
-		b.Send(m.Chat, verMsg)
-	})
-
-	// Запускаем бота
-	log.Print("Бот запущен!")
-	b.Start()
+	log.Print("Started listening")
+	bot.Start()
 }
 
+func challengeUser(m *tb.Message) {
+	if m.UserJoined.ID != m.Sender.ID {
+		return //invited users are not challengeable
+	}
+	log.Printf("%v joined the %v chat", m.UserJoined, m.Chat)
+	newChatMember := tb.ChatMember{User: m.UserJoined, RestrictedUntil: tb.Forever(), Rights: tb.Rights{CanSendMessages: false}}
+	bot.Restrict(m.Chat, &newChatMember)
+
+	inlineKeys := [][]tb.InlineButton{{tb.InlineButton{
+		Unique: "challenge_btn",
+		Text:   "Я не спамер!",
+	}}}
+	challengeMsg, _ := bot.Reply(m, "Это защита от спама. У вас есть 30 секунд, чтобы нажать на кнопку, иначе вы будете забанены!", &tb.ReplyMarkup{InlineKeyboard: inlineKeys})
+
+	time.AfterFunc(30*time.Second, func() {
+		_, passed := passedUsers[m.UserJoined.ID]
+		if !passed {
+			chatMember := tb.ChatMember{User: m.UserJoined, RestrictedUntil: tb.Forever()}
+			bot.Ban(m.Chat, &chatMember)
+			bot.Delete(challengeMsg)
+			log.Printf("%v was banned in %v", m.UserJoined, m.Chat)
+		}
+		delete(passedUsers, m.UserJoined.ID)
+	})
+}
+
+func passChallenge(c *tb.Callback) {
+	if c.Message.ReplyTo.Sender.ID != c.Sender.ID {
+		bot.Respond(c, &tb.CallbackResponse{Text: "Эта кнопка не для вас"})
+		return
+	}
+	passedUsers[c.Sender.ID] = struct{}{}
+	bot.Edit(c.Message, "Добро пожаловать!")
+	log.Printf("%v passed the challenge in %v", c.Sender, c.Message.Chat)
+	newChatMember := tb.ChatMember{User: c.Sender, RestrictedUntil: tb.Forever(), Rights: tb.Rights{CanSendMessages: true}}
+	bot.Promote(c.Message.Chat, &newChatMember)
+	bot.Respond(c, &tb.CallbackResponse{Text: "Доступ разрешен!"})
+}
