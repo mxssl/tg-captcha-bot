@@ -1,35 +1,63 @@
 # Telegram Captcha Bot
 
-Бот для Telegram, который позволяет проверять всех новых посетителей вашей группы на принадлежность к настоящим людям :)
-Работает по тому же принципу, что и обычная captcha.
+This telegram bot validates new users that enter supergroup. Validation works like a simple captcha.
 
-## Как работает
-На каждого нового посетителя бот вешает рестрикт на отправку сообщений и предлагает нажать на кнопку. Если в течении 30ти секунд новый посетитель на кнопку не нажимает, тогда бот банит нового посетителя. Для работы боту надо дать права администратора в группе.
+## How it works
+0. Promote bot for administrator privileges in your group
+1. New user enter the supergroup
+2. Bot restricts new user's ability to send messages
+3. Bot show welcome message and captcha button to the user
+4. Bot waits 30 seconds for the user to press the button
+5. Bot bans the user if she/he didn't press the button within 30 seconds
 
-## Как запустить
-Основным способом использования бота является Docker контейнер. Получить инструкцию по установке Docker можно по [ссылке](https://docs.docker.com/install/). Перед началом работы вам нужно получить token у [@BotFather](https://t.me/BotFather)
+## How to run
+0. Obtain bot token from [@BotFather](https://t.me/BotFather)
+1. Main method to run this bot is Docker container
+2. Install [Docker](https://docs.docker.com/install)
+3. Install [Docker Compose](https://docs.docker.com/compose/install)
 
-#### Скачиваем репозиторий и переходим в директорию
+#### Clone repo
 ```
 git clone https://github.com/mxssl/tg-captcha-bot.git
 cd tg-captcha-bot
 ```
 
-#### Билдим Docker образ
+#### Add token from BotFather to env variable in docker-compose.yml
 ```
-docker build --tag tg-captcha-bot .
+version: '3'
+
+services:
+  tg-captcha-bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: tg-captcha-bot:latest
+    volumes:
+      - ./config.toml:/config.toml
+    environment:
+      - TGTOKEN="your_token"
 ```
 
-#### Запускаем бота
+#### Build Docker container
 ```
-docker container run \
-  --rm \
-  --detach \
-  --name captcha-bot \
-  --env TGTOKEN="Тут указываем токен, который получили от BotFather" \
-  tg-captcha-bot
+docker-compose build
 ```
 
-Посмотреть логи можно командой `docker container logs captcha-bot`
+#### Run container
+```
+docker-compose up -d
+```
 
-После запуска контейнера с ботом, можно добавлять бота в нужную группу и выдавать ему административные права.
+#### Check that everything is OK
+```
+docker-compose ps
+docker-compose logs
+```
+
+Add bot to your supergroup and give it administrator privileges.
+
+#### Customize bot
+You can change several bot's settings through the configuration file `config.toml`
+
+## Contacts
+If you have questions feel free to ask me [@mxssl](https://t.me/mxssl)

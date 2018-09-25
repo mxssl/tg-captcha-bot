@@ -1,14 +1,34 @@
 package main
 
 import (
-	tb "gopkg.in/tucnak/telebot.v2"
 	"log"
 	"os"
 	"time"
+
+	"github.com/spf13/viper"
+	tb "gopkg.in/tucnak/telebot.v2"
 )
 
+// Config struct for toml config file
+type Config struct {
+	ButtonText          string `mapstructure:"button_text"`
+	WelcomeMessage      string `mapstructure:"welcome_message"`
+	AfterSuccessMessage string `mapstructure:"after_success_message"`
+	AfterFailMessage    string `mapstructure:"after_fail_message"`
+	PrintSuccessAndFail string `mapstructure:"print_success_and_fail_messages_strategy"`
+}
+
+var config Config
 var passedUsers = make(map[int]struct{})
 var bot *tb.Bot
+
+func init() {
+	// Read config file
+	err := readConfig()
+	if err != nil {
+		log.Fatalf("Cannot read config file. Error: %v", err)
+	}
+}
 
 func main() {
 	var err error
@@ -17,52 +37,80 @@ func main() {
 		Poller: &tb.LongPoller{Timeout: 10 * time.Second},
 	})
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Cannot start bot. Error: %v", err)
 		return
 	}
 
 	bot.Handle(tb.OnUserJoined, challengeUser)
 	bot.Handle(tb.OnCallback, passChallenge)
 
-	log.Print("Started listening")
+	log.Println("Bot started!")
 	bot.Start()
 }
 
 func challengeUser(m *tb.Message) {
 	if m.UserJoined.ID != m.Sender.ID {
-		return //invited users are not challengeable
+		return
 	}
-	log.Printf("%v joined the %v chat", m.UserJoined, m.Chat)
+	log.Printf("User: %v joined the chat: %v", m.UserJoined, m.Chat)
 	newChatMember := tb.ChatMember{User: m.UserJoined, RestrictedUntil: tb.Forever(), Rights: tb.Rights{CanSendMessages: false}}
 	bot.Restrict(m.Chat, &newChatMember)
 
 	inlineKeys := [][]tb.InlineButton{{tb.InlineButton{
 		Unique: "challenge_btn",
-		Text:   "Я не спамер!",
+		Text:   config.ButtonText,
 	}}}
-	challengeMsg, _ := bot.Reply(m, "Это защита от спама. У вас есть 30 секунд, чтобы нажать на кнопку, иначе вы будете забанены!", &tb.ReplyMarkup{InlineKeyboard: inlineKeys})
+	challengeMsg, _ := bot.Reply(m, config.WelcomeMessage, &tb.ReplyMarkup{InlineKeyboard: inlineKeys})
 
 	time.AfterFunc(30*time.Second, func() {
 		_, passed := passedUsers[m.UserJoined.ID]
 		if !passed {
 			chatMember := tb.ChatMember{User: m.UserJoined, RestrictedUntil: tb.Forever()}
 			bot.Ban(m.Chat, &chatMember)
-			bot.Delete(challengeMsg)
-			log.Printf("%v was banned in %v", m.UserJoined, m.Chat)
+
+			if config.PrintSuccessAndFail == "show" {
+				bot.Edit(challengeMsg, config.AfterFailMessage)
+			} else if config.PrintSuccessAndFail == "del" {
+				bot.Delete(challengeMsg)
+			}
+
+			log.Printf("User: %v was banned in chat: %v", m.UserJoined, m.Chat)
 		}
 		delete(passedUsers, m.UserJoined.ID)
 	})
 }
 
+// passChallenge is used when user passed the validation
 func passChallenge(c *tb.Callback) {
 	if c.Message.ReplyTo.Sender.ID != c.Sender.ID {
-		bot.Respond(c, &tb.CallbackResponse{Text: "Эта кнопка не для вас"})
+		bot.Respond(c, &tb.CallbackResponse{Text: "This button isn't for you"})
 		return
 	}
 	passedUsers[c.Sender.ID] = struct{}{}
-	bot.Edit(c.Message, "Добро пожаловать!")
-	log.Printf("%v passed the challenge in %v", c.Sender, c.Message.Chat)
+
+	if config.PrintSuccessAndFail == "show" {
+		bot.Edit(c.Message, config.AfterSuccessMessage)
+	} else if config.PrintSuccessAndFail == "del" {
+		bot.Delete(c.Message)
+	}
+
+	log.Printf("User: %v passed the challenge in chat: %v", c.Sender, c.Message.Chat)
 	newChatMember := tb.ChatMember{User: c.Sender, RestrictedUntil: tb.Forever(), Rights: tb.Rights{CanSendMessages: true}}
 	bot.Promote(c.Message.Chat, &newChatMember)
-	bot.Respond(c, &tb.CallbackResponse{Text: "Доступ разрешен!"})
+	bot.Respond(c, &tb.CallbackResponse{Text: "Validation passed!"})
+}
+
+// readConfig is used for config unmarshall
+func readConfig() (err error) {
+	v := viper.New()
+	v.SetConfigName("config")
+	v.AddConfigPath(".")
+
+	if err = v.ReadInConfig(); err != nil {
+		return err
+	}
+	if err = v.Unmarshal(&config); err != nil {
+		return err
+	}
+	return
 }

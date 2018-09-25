@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+  tg-captcha-bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: tg-captcha-bot:latest
+    environment:
+      - TGTOKEN="your_token"
