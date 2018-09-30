@@ -1,28 +1,31 @@
 # Telegram Captcha Bot
 
-This telegram bot validates new users that enter supergroup. Validation works like a simple captcha.
+Telegram bot that validates new users that enter supergroup. Validation works like a simple captcha. Bot written in Go (Golang).
+
+This bot has been tested on several large supergroups (1000+ people) for a long time and has shown its effectiveness against spammers.
 
 ## How it works
-0. Promote bot for administrator privileges in your group
-1. New user enter the supergroup
-2. Bot restricts new user's ability to send messages
-3. Bot show welcome message and captcha button to the user
-4. Bot waits 30 seconds for the user to press the button
-5. Bot bans the user if she/he didn't press the button within 30 seconds
+0. Add a bot to your supergroup
+1. Promote the bot for administrator privileges
+2. A new user enters your supergroup
+3. Bot restricts the user's ability to send messages
+4. Bot shows a welcome message and a captcha button to the user
+5. If the user doesn't press the button within 30 seconds then the user is banned by the bot
 
 ## How to run
 0. Obtain bot token from [@BotFather](https://t.me/BotFather)
-1. Main method to run this bot is Docker container
+1. The main method to run this bot is Docker container
 2. Install [Docker](https://docs.docker.com/install)
 3. Install [Docker Compose](https://docs.docker.com/compose/install)
 
-#### Clone repo
+## Instructions 
+0. Clone the repo
 ```
 git clone https://github.com/mxssl/tg-captcha-bot.git
 cd tg-captcha-bot
 ```
 
-#### Add token from BotFather to env variable in docker-compose.yml
+1. Add a token from BotFather to env variable in docker-compose.yml
 ```
 version: '3'
 
@@ -38,26 +41,26 @@ services:
       - TGTOKEN="your_token"
 ```
 
-#### Build Docker container
+2. Build a Docker container
 ```
 docker-compose build
 ```
 
-#### Run container
+3. Run the container
 ```
 docker-compose up -d
 ```
 
-#### Check that everything is OK
+4. Check that the bot started correctly
 ```
 docker-compose ps
 docker-compose logs
 ```
 
-Add bot to your supergroup and give it administrator privileges.
+5. Add the bot to your supergroup and give it administrator privileges
 
-#### Customize bot
+## Сustomization
 You can change several bot's settings through the configuration file `config.toml`
 
 ## Contacts
-If you have questions feel free to ask me [@mxssl](https://t.me/mxssl)
+If you have questions feel free to ask me in TG [@mxssl](https://t.me/mxssl)
