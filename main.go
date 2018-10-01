@@ -3,7 +3,9 @@ package main
 import (
 	"log"
 	"os"
+	"os/signal"
 	"regexp"
+	"syscall"
 	"time"
 
 	"github.com/pkg/errors"
@@ -26,7 +28,6 @@ var bot *tb.Bot
 var tgtoken = "TGTOKEN"
 
 func init() {
-	// Read config file
 	err := readConfig()
 	if err != nil {
 		log.Fatalf("Cannot read config file. Error: %v", err)
@@ -36,25 +37,39 @@ func init() {
 func main() {
 	token, e := getToken(tgtoken)
 	if e != nil {
-		log.Println(e)
-		os.Exit(0)
+		log.Fatalln(e)
 	}
 	log.Printf("Telegram Bot Token [%v] successfully obtained from env variable $TGTOKEN\n", token)
+
 	var err error
 	bot, err = tb.NewBot(tb.Settings{
 		Token:  token,
 		Poller: &tb.LongPoller{Timeout: 10 * time.Second},
 	})
 	if err != nil {
-		log.Fatalf("Cannot start bot. Error: %v", err)
-		return
+		log.Fatalf("Cannot start bot. Error: %v\n", err)
 	}
 
 	bot.Handle(tb.OnUserJoined, challengeUser)
 	bot.Handle(tb.OnCallback, passChallenge)
 
+	bot.Handle("/healthz", func(m *tb.Message) {
+		msg := "I'm OK"
+		if _, err := bot.Send(m.Chat, msg); err != nil {
+			log.Println(err)
+		}
+		log.Printf("Healthz request from user: %v\n in chat: %v", m.Sender, m.Chat)
+	})
+
 	log.Println("Bot started!")
-	bot.Start()
+	go func() {
+		bot.Start()
+	}()
+
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
+	<-signalChan
+	log.Println("Shutdown signal received, exiting...")
 }
 
 func challengeUser(m *tb.Message) {
@@ -109,7 +124,6 @@ func passChallenge(c *tb.Callback) {
 	bot.Respond(c, &tb.CallbackResponse{Text: "Validation passed!"})
 }
 
-// readConfig is used for config unmarshall
 func readConfig() (err error) {
 	v := viper.New()
 	v.SetConfigName("config")
