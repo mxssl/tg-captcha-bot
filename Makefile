@@ -1,6 +1,6 @@
 BINARY_NAME=bot
 
-.PHONY: all build clean lint test dep build-linux build-darwin
+.PHONY: all build clean lint test dep
 
 all: build
 

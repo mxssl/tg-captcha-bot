@@ -3,8 +3,10 @@ package main
 import (
 	"log"
 	"os"
+	"regexp"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
@@ -21,6 +23,7 @@ type Config struct {
 var config Config
 var passedUsers = make(map[int]struct{})
 var bot *tb.Bot
+var tgtoken = "TGTOKEN"
 
 func init() {
 	// Read config file
@@ -31,9 +34,15 @@ func init() {
 }
 
 func main() {
+	token, e := getToken(tgtoken)
+	if e != nil {
+		log.Println(e)
+		os.Exit(0)
+	}
+	log.Printf("Telegram Bot Token [%v] successfully obtained from env variable $TGTOKEN\n", token)
 	var err error
 	bot, err = tb.NewBot(tb.Settings{
-		Token:  os.Getenv("TGTOKEN"),
+		Token:  token,
 		Poller: &tb.LongPoller{Timeout: 10 * time.Second},
 	})
 	if err != nil {
@@ -113,4 +122,21 @@ func readConfig() (err error) {
 		return err
 	}
 	return
+}
+
+func getToken(key string) (string, error) {
+	token, ok := os.LookupEnv(key)
+	if !ok {
+		err := errors.Errorf("Env variable %v isn't set!", key)
+		return "", err
+	}
+	match, err := regexp.MatchString(`^[0-9]+:.*$`, token)
+	if err != nil {
+		return "", err
+	}
+	if !match {
+		err := errors.Errorf("Telegram Bot Token [%v] is incorrect. Token doesn't comply with regexp: `^[0-9]+:.*$`. Please, provide a correct Telegram Bot Token through env variable TGTOKEN", token)
+		return "", err
+	}
+	return token, nil
 }

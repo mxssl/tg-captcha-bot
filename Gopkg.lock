@@ -146,6 +146,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/pkg/errors",
     "github.com/spf13/viper",
     "gopkg.in/tucnak/telebot.v2",
   ]
