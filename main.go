@@ -95,6 +95,7 @@ func challengeUser(m *tb.Message) {
 			if config.PrintSuccessAndFail == "show" {
 				bot.Edit(challengeMsg, config.AfterFailMessage)
 			} else if config.PrintSuccessAndFail == "del" {
+				bot.Delete(m)
 				bot.Delete(challengeMsg)
 			}
 
