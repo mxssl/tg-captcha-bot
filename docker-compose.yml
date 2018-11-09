@@ -7,4 +7,4 @@ services:
       dockerfile: Dockerfile
     image: tg-captcha-bot:latest
     environment:
-      - TGTOKEN="your_token"
+      - TGTOKEN=your_token
