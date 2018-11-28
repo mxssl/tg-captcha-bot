@@ -38,7 +38,7 @@ services:
     volumes:
       - ./config.toml:/config.toml
     environment:
-      - TGTOKEN="your_token"
+      - TGTOKEN=your_token
 ```
 
 2. Build a Docker container
