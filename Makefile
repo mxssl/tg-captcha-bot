@@ -1,5 +1,6 @@
 BINARY_NAME=bot
 CURRENT_DIR=$(shell pwd)
+export GO111MODULE=on
 
 .PHONY: all build clean lint critic test dep
 
@@ -20,5 +21,8 @@ critic:
 test:
 	go test -v ./...
 
-dep:
-	dep ensure
+init:
+	go mod init
+
+tidy:
+	go mod tidy

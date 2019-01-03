@@ -2,7 +2,7 @@
 
 Telegram bot that validates new users that enter supergroup. Validation works like a simple captcha. Bot written in Go (Golang).
 
-This bot has been tested on several large supergroups (1000+ people) for a long time and has shown its effectiveness against spammers.
+This bot has been tested on several large supergroups (1500+ people) for a long time and has shown its effectiveness against spammers.
 
 ## How it works
 0. Add a bot to your supergroup
@@ -26,7 +26,7 @@ cd tg-captcha-bot
 ```
 
 1. Add a token from BotFather to env variable in docker-compose.yml
-```
+```yaml
 version: '3'
 
 services:
@@ -37,8 +37,9 @@ services:
     image: tg-captcha-bot:latest
     volumes:
       - ./config.toml:/config.toml
+    restart: unless-stopped
     environment:
-      - TGTOKEN="your_token"
+      - TGTOKEN=your_token
 ```
 
 2. Build a Docker container

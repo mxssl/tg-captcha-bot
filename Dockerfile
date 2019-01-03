@@ -1,12 +1,14 @@
-FROM golang:alpine as builder
+FROM golang:1.11.2-alpine as builder
+
+ENV GO111MODULE=on
 
 WORKDIR /go/src/github.com/mxssl/tg-captcha-bot
 COPY . .
 
-# install dep package manager
+# Install external dependcies
 RUN apk add --no-cache ca-certificates curl git
-RUN curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-RUN dep ensure
+
+# Compile binary
 RUN CGO_ENABLED=0 GOOS=`go env GOHOSTOS` GOARCH=`go env GOHOSTARCH` go build -o bot
 
 # Copy compiled binary to clear Alpine Linux image

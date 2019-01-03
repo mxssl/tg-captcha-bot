@@ -6,5 +6,8 @@ services:
       context: .
       dockerfile: Dockerfile
     image: tg-captcha-bot:latest
+    volumes:
+      - ./config.toml:/config.toml
+    restart: unless-stopped
     environment:
       - TGTOKEN=your_token
