@@ -25,8 +25,13 @@ func NewBot(pref Settings) (*Bot, error) {
 		client = http.DefaultClient
 	}
 
+	if pref.URL == "" {
+		pref.URL = DefaultApiURL
+	}
+
 	bot := &Bot{
 		Token:   pref.Token,
+		URL:     pref.URL,
 		Updates: make(chan Update, pref.Updates),
 		Poller:  pref.Poller,
 
@@ -49,6 +54,7 @@ func NewBot(pref Settings) (*Bot, error) {
 type Bot struct {
 	Me      *User
 	Token   string
+	URL     string
 	Updates chan Update
 	Poller  Poller
 
@@ -61,6 +67,9 @@ type Bot struct {
 // Settings represents a utility struct for passing certain
 // properties of a bot around and is required to make bots.
 type Settings struct {
+	// Telegram API Url
+	URL string
+
 	// Telegram token
 	Token string
 
@@ -454,8 +463,8 @@ func (b *Bot) Stop() {
 // Send accepts 2+ arguments, starting with destination chat, followed by
 // some Sendable (or string!) and optional send options.
 //
-// Note: since most arguments are of type interface{}, make sure to pass
-//       them by-pointer, NOT by-value, which will result in a panic.
+// Note: since most arguments are of type interface{}, but have pointer
+// 		method recievers, make sure to pass them by-pointer, NOT by-value.
 //
 // What is a send option exactly? It can be one of the following types:
 //
@@ -474,7 +483,7 @@ func (b *Bot) Send(to Recipient, what interface{}, options ...interface{}) (*Mes
 	case Sendable:
 		return object.Send(b, to, sendOpts)
 	default:
-		panic("telebot: unsupported sendable")
+		return nil, errors.New("telebot: unsupported sendable")
 	}
 }
 
@@ -484,7 +493,7 @@ func (b *Bot) Send(to Recipient, what interface{}, options ...interface{}) (*Mes
 // From all existing options, it only supports telebot.Silent.
 func (b *Bot) SendAlbum(to Recipient, a Album, options ...interface{}) ([]Message, error) {
 	media := make([]string, len(a))
-	files := make(map[string]string)
+	files := make(map[string]File)
 
 	for i, x := range a {
 		var mediaRepr string
@@ -496,9 +505,9 @@ func (b *Bot) SendAlbum(to Recipient, a Album, options ...interface{}) ([]Messag
 			mediaRepr = f.FileID
 		} else if f.FileURL != "" {
 			mediaRepr = f.FileURL
-		} else if f.OnDisk() {
+		} else if f.OnDisk() || f.FileReader != nil {
 			mediaRepr = fmt.Sprintf("attach://%d", i)
-			files[strconv.Itoa(i)] = f.FileLocal
+			files[strconv.Itoa(i)] = *f
 		} else {
 			return nil, errors.Errorf(
 				"telebot: album entry #%d doesn't exist anywhere", i)
@@ -825,8 +834,8 @@ func (b *Bot) Download(f *File, localFilename string) error {
 		return err
 	}
 
-	url := fmt.Sprintf("https://api.telegram.org/file/bot%s/%s",
-		b.Token, g.FilePath)
+	url := fmt.Sprintf("%s/file/bot%s/%s",
+		b.URL, b.Token, g.FilePath)
 
 	out, err := os.Create(localFilename)
 	if err != nil {
@@ -939,8 +948,7 @@ func (b *Bot) SetGroupPhoto(chat *Chat, p *Photo) error {
 		"chat_id": chat.Recipient(),
 	}
 
-	respJSON, err := b.sendFiles("setChatPhoto",
-		map[string]string{"photo": p.FileLocal}, params)
+	respJSON, err := b.sendFiles("setChatPhoto", map[string]File{"photo": p.File}, params)
 	if err != nil {
 		return err
 	}
@@ -1153,5 +1161,5 @@ func (b *Bot) FileURLByID(fileID string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return "https://api.telegram.org/file/bot" + b.Token + "/" + f.FilePath, nil
+	return fmt.Sprintf("%s/file/bot%s/%s", b.URL, b.Token, f.FilePath), nil
 }

@@ -78,7 +78,10 @@ func challengeUser(m *tb.Message) {
 	}
 	log.Printf("User: %v joined the chat: %v", m.UserJoined, m.Chat)
 	newChatMember := tb.ChatMember{User: m.UserJoined, RestrictedUntil: tb.Forever(), Rights: tb.Rights{CanSendMessages: false}}
-	bot.Restrict(m.Chat, &newChatMember)
+	err := bot.Restrict(m.Chat, &newChatMember)
+	if err != nil {
+		log.Println(err)
+	}
 
 	inlineKeys := [][]tb.InlineButton{{tb.InlineButton{
 		Unique: "challenge_btn",
@@ -90,13 +93,25 @@ func challengeUser(m *tb.Message) {
 		_, passed := passedUsers[m.UserJoined.ID]
 		if !passed {
 			chatMember := tb.ChatMember{User: m.UserJoined, RestrictedUntil: tb.Forever()}
-			bot.Ban(m.Chat, &chatMember)
+			err := bot.Ban(m.Chat, &chatMember)
+			if err != nil {
+				log.Println(err)
+			}
 
 			if config.PrintSuccessAndFail == "show" {
-				bot.Edit(challengeMsg, config.AfterFailMessage)
+				_, err := bot.Edit(challengeMsg, config.AfterFailMessage)
+				if err != nil {
+					log.Println(err)
+				}
 			} else if config.PrintSuccessAndFail == "del" {
-				bot.Delete(m)
-				bot.Delete(challengeMsg)
+				err := bot.Delete(m)
+				if err != nil {
+					log.Println(err)
+				}
+				err = bot.Delete(challengeMsg)
+				if err != nil {
+					log.Println(err)
+				}
 			}
 
 			log.Printf("User: %v was banned in chat: %v", m.UserJoined, m.Chat)
@@ -108,21 +123,36 @@ func challengeUser(m *tb.Message) {
 // passChallenge is used when user passed the validation
 func passChallenge(c *tb.Callback) {
 	if c.Message.ReplyTo.Sender.ID != c.Sender.ID {
-		bot.Respond(c, &tb.CallbackResponse{Text: "This button isn't for you"})
+		err := bot.Respond(c, &tb.CallbackResponse{Text: "This button isn't for you"})
+		if err != nil {
+			log.Println(err)
+		}
 		return
 	}
 	passedUsers[c.Sender.ID] = struct{}{}
 
 	if config.PrintSuccessAndFail == "show" {
-		bot.Edit(c.Message, config.AfterSuccessMessage)
+		_, err := bot.Edit(c.Message, config.AfterSuccessMessage)
+		if err != nil {
+			log.Println(err)
+		}
 	} else if config.PrintSuccessAndFail == "del" {
-		bot.Delete(c.Message)
+		err := bot.Delete(c.Message)
+		if err != nil {
+			log.Println(err)
+		}
 	}
 
 	log.Printf("User: %v passed the challenge in chat: %v", c.Sender, c.Message.Chat)
 	newChatMember := tb.ChatMember{User: c.Sender, RestrictedUntil: tb.Forever(), Rights: tb.Rights{CanSendMessages: true}}
-	bot.Promote(c.Message.Chat, &newChatMember)
-	bot.Respond(c, &tb.CallbackResponse{Text: "Validation passed!"})
+	err := bot.Promote(c.Message.Chat, &newChatMember)
+	if err != nil {
+		log.Println(err)
+	}
+	err = bot.Respond(c, &tb.CallbackResponse{Text: "Validation passed!"})
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 func readConfig() (err error) {

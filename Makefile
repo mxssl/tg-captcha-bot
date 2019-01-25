@@ -13,7 +13,7 @@ clean:
 	rm -f ${BINARY_NAME}
 
 lint:
-	golangci-lint run -v
+	golangci-lint run
 
 critic:
 	gocritic check-project ${CURRENT_DIR}
@@ -26,3 +26,4 @@ init:
 
 tidy:
 	go mod tidy
+
