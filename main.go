@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/signal"
 	"regexp"
+	"sync"
 	"syscall"
 	"time"
 
@@ -23,7 +24,7 @@ type Config struct {
 }
 
 var config Config
-var passedUsers = make(map[int]struct{})
+var passedUsers = sync.Map{}
 var bot *tb.Bot
 var tgtoken = "TGTOKEN"
 
@@ -90,7 +91,7 @@ func challengeUser(m *tb.Message) {
 	challengeMsg, _ := bot.Reply(m, config.WelcomeMessage, &tb.ReplyMarkup{InlineKeyboard: inlineKeys})
 
 	time.AfterFunc(30*time.Second, func() {
-		_, passed := passedUsers[m.UserJoined.ID]
+		_, passed := passedUsers.Load(m.UserJoined.ID)
 		if !passed {
 			chatMember := tb.ChatMember{User: m.UserJoined, RestrictedUntil: tb.Forever()}
 			err := bot.Ban(m.Chat, &chatMember)
@@ -116,7 +117,7 @@ func challengeUser(m *tb.Message) {
 
 			log.Printf("User: %v was banned in chat: %v", m.UserJoined, m.Chat)
 		}
-		delete(passedUsers, m.UserJoined.ID)
+		passedUsers.Delete(m.UserJoined.ID)
 	})
 }
 
@@ -129,7 +130,7 @@ func passChallenge(c *tb.Callback) {
 		}
 		return
 	}
-	passedUsers[c.Sender.ID] = struct{}{}
+	passedUsers.Store(c.Sender.ID, struct{}{})
 
 	if config.PrintSuccessAndFail == "show" {
 		_, err := bot.Edit(c.Message, config.AfterSuccessMessage)
