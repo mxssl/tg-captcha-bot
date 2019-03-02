@@ -27,3 +27,12 @@ init:
 tidy:
 	go mod tidy
 
+release-dry:
+	goreleaser release --rm-dist --snapshot --skip-publish
+
+release:
+	goreleaser release --rm-dist
+
+release-docker:
+	docker build --tag mxssl/tg-captcha-bot:$(shell git tag --list | tail -n 1) .
+	docker push mxssl/tg-captcha-bot:$(shell git tag --list | tail -n 1)

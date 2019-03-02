@@ -4,17 +4,14 @@ before:
 builds:
 - env:
   - CGO_ENABLED=0
-- goos:
+  goos:
     - linux
-- goarch:
+  goarch:
     - amd64
-archive:
-  replacements:
-    linux: Linux
 checksum:
   name_template: 'checksums.txt'
 snapshot:
-  name_template: "{{ .Tag }}-next"
+  name_template: "{{ .Tag }}"
 changelog:
   sort: asc
   filters:
