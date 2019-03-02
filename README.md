@@ -70,6 +70,10 @@ docker-compose logs
 
 6. Add the bot to your supergroup and give it administrator privileges
 
+## Commands
+
+`/healthz` - check that the bot is working correctly
+
 ## Сustomization
 
 You can change several bot's settings through the configuration file `config.toml`
