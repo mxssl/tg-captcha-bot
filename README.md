@@ -22,7 +22,7 @@ This bot has been tested on several supergroups (2000+ people) for a long time a
 3. Install [Docker](https://docs.docker.com/install)
 4. Install [Docker Compose](https://docs.docker.com/compose/install)
 
-## Instructions 
+## Instructions
 
 1. Clone the repo
 
