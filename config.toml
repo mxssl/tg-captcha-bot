@@ -14,3 +14,9 @@ after_fail_message = "User didn't pass the validation and was banned."
 
 # Show success and failure messages or delete them. Pick "show" or "del"
 print_success_and_fail_messages_strategy = "show"
+
+# During this time in seconds, the new user have to press the captha button
+welcome_timeout = "30"
+
+# If the new user does not press the button, the bot will ban the user for this duration of time. Can be "forever" or number of minutes ("10")
+ban_duration = "forever"

@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/signal"
 	"regexp"
+	"strconv"
 	"sync"
 	"syscall"
 	"time"
@@ -21,6 +22,8 @@ type Config struct {
 	AfterSuccessMessage string `mapstructure:"after_success_message"`
 	AfterFailMessage    string `mapstructure:"after_fail_message"`
 	PrintSuccessAndFail string `mapstructure:"print_success_and_fail_messages_strategy"`
+	WelcomeTimeout      string `mapstructure:"welcome_timeout"`
+	BanDurations        string `mapstructure:"ban_duration"`
 }
 
 var config Config
@@ -90,10 +93,18 @@ func challengeUser(m *tb.Message) {
 	}}}
 	challengeMsg, _ := bot.Reply(m, config.WelcomeMessage, &tb.ReplyMarkup{InlineKeyboard: inlineKeys})
 
-	time.AfterFunc(30*time.Second, func() {
+	n, err := strconv.ParseInt(config.WelcomeTimeout, 10, 64)
+	if err != nil {
+		log.Println(err)
+	}
+	time.AfterFunc(time.Duration(n)*time.Second, func() {
 		_, passed := passedUsers.Load(m.UserJoined.ID)
 		if !passed {
-			chatMember := tb.ChatMember{User: m.UserJoined, RestrictedUntil: tb.Forever()}
+			banDuration, e := getBanDuration()
+			if e != nil {
+				log.Println(e)
+			}
+			chatMember := tb.ChatMember{User: m.UserJoined, RestrictedUntil: banDuration}
 			err := bot.Ban(m.Chat, &chatMember)
 			if err != nil {
 				log.Println(err)
@@ -115,7 +126,7 @@ func challengeUser(m *tb.Message) {
 				}
 			}
 
-			log.Printf("User: %v was banned in chat: %v", m.UserJoined, m.Chat)
+			log.Printf("User: %v was banned in chat: %v for: %v minutes", m.UserJoined, m.Chat, config.BanDurations)
 		}
 		passedUsers.Delete(m.UserJoined.ID)
 	})
@@ -185,4 +196,17 @@ func getToken(key string) (string, error) {
 		return "", err
 	}
 	return token, nil
+}
+
+func getBanDuration() (int64, error) {
+	if config.BanDurations == "forever" {
+		return tb.Forever(), nil
+	}
+
+	n, err := strconv.ParseInt(config.BanDurations, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+
+	return time.Now().Add(time.Duration(n) * time.Minute).Unix(), nil
 }
