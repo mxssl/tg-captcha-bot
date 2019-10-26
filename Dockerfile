@@ -1,4 +1,4 @@
-FROM golang:1.13.0-alpine3.10 as builder
+FROM golang:1.13.3-alpine3.10 as builder
 
 ENV GO111MODULE=on
 
@@ -18,7 +18,7 @@ RUN CGO_ENABLED=0 \
   go build -o bot
 
 # Copy compiled binary to clear Alpine Linux image
-FROM alpine:3.10
+FROM alpine:3.10.3
 WORKDIR /
 RUN apk add --no-cache ca-certificates
 COPY --from=builder /go/src/github.com/mxssl/tg-captcha-bot .
