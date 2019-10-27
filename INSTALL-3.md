@@ -20,7 +20,7 @@ wget https://github.com/mxssl/tg-captcha-bot/releases/download/v1.0.6/tg-captcha
 
 tar xvzf tg-captcha-bot_1.0.6_linux_amd64.tar.gz
 
-mv tg-captcha-bot_1.0.6_linux_amd64 /usr/local/bin/tg-captcha-bot
+mv tg-captcha-bot /usr/local/bin/tg-captcha-bot
 
 chmod +x /usr/local/bin/tg-captcha-bot
 ```
