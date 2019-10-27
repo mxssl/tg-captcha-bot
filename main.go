@@ -30,6 +30,7 @@ var config Config
 var passedUsers = sync.Map{}
 var bot *tb.Bot
 var tgtoken = "TGTOKEN"
+var configPath = "CONFIG_PATH"
 
 func init() {
 	err := readConfig()
@@ -177,6 +178,11 @@ func passChallenge(c *tb.Callback) {
 
 func readConfig() (err error) {
 	v := viper.New()
+	path, ok := os.LookupEnv(configPath)
+	if ok {
+		v.SetConfigName("config")
+		v.AddConfigPath(path)
+	}
 	v.SetConfigName("config")
 	v.AddConfigPath(".")
 

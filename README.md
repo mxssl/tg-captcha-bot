@@ -15,60 +15,11 @@ This bot has been tested on several supergroups (2000+ people) for a long time a
 5. Bot shows a welcome message and a captcha button to the user
 6. If the user doesn't press the button within 30 seconds then the user is banned by the bot
 
-## How to run
+## How to install
 
-1. Obtain bot token from [@BotFather](https://t.me/BotFather)
-2. The main method to run this bot is Docker container
-3. Install [Docker](https://docs.docker.com/install)
-4. Install [Docker Compose](https://docs.docker.com/compose/install)
-
-## Instructions
-
-1. Clone the repo
-
-```bash
-git clone https://github.com/mxssl/tg-captcha-bot.git
-cd tg-captcha-bot
-```
-
-2. Add a token from BotFather to env variable in docker-compose.yml
-
-```yaml
-version: '3'
-
-services:
-  tg-captcha-bot:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: tg-captcha-bot:latest
-    volumes:
-      - ./config.toml:/config.toml
-    restart: unless-stopped
-    environment:
-      - TGTOKEN=your_token
-```
-
-3. Build a Docker container
-
-```bash
-docker-compose build
-```
-
-4. Run the container
-
-```bash
-docker-compose up -d
-```
-
-5. Check that the bot started correctly
-
-```bash
-docker-compose ps
-docker-compose logs
-```
-
-6. Add the bot to your supergroup and give it administrator privileges
+- [Option 1 (the easiest one)](./INSTALL-1.md): docker-compose + already builded docker container
+- [Option 2](./INSTALL-2.md): docker-compose + build your own docker container
+- [Option 3](./INSTALL-3.md): systemd
 
 ## Commands
 
