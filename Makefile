@@ -1,22 +1,21 @@
 BINARY_NAME=bot
 CURRENT_DIR=$(shell pwd)
+TAG=$(shell git name-rev --tags --name-only $(shell git rev-parse HEAD))
+DOCKER_REGISTRY=mxssl
 export GO111MODULE=on
 
-.PHONY: all build clean lint critic test dep
+.PHONY: all build clean lint critic test
 
-all: dep build
+all: build
 
 build:
-	go build -o ${BINARY_NAME} -v
+	go build -v -mod=vendor -o ${BINARY_NAME}
 
 clean:
 	rm -f ${BINARY_NAME}
 
 lint:
-	golangci-lint run
-
-critic:
-	gocritic check-project ${CURRENT_DIR}
+	golangci-lint run -v
 
 test:
 	go test -v ./...
@@ -27,12 +26,16 @@ init:
 tidy:
 	go mod tidy
 
-release-dry:
+github-release-dry:
+	@echo "TAG: ${TAG}"
 	goreleaser release --rm-dist --snapshot --skip-publish
 
-release:
+github-release:
+	@echo "TAG: ${TAG}"
 	goreleaser release --rm-dist
 
-release-docker:
-	docker build --tag mxssl/tg-captcha-bot:$(shell git tag --list | tail -n 1) .
-	docker push mxssl/tg-captcha-bot:$(shell git tag --list | tail -n 1)
+docker-release:
+	@echo "Registry: ${DOCKER_REGISTRY}"
+	@echo "TAG: ${TAG}"
+	docker build --tag ${DOCKER_REGISTRY}/${BINARY_NAME}:${TAG} .
+	docker push ${DOCKER_REGISTRY}/${BINARY_NAME}:${TAG}

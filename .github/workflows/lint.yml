@@ -1,0 +1,16 @@
+name: "Lint"
+
+on: [push]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    container: 
+      image: golangci/golangci-lint:v1.20-alpine
+      options: -w /go/src/github.com/mxssl/dns
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install dependencies
+        run: apk add --no-cache make
+      - name: Lint
+        run: make lint
