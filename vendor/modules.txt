@@ -30,7 +30,10 @@ github.com/spf13/jwalterweatherman
 github.com/spf13/pflag
 # github.com/spf13/viper v1.3.1
 github.com/spf13/viper
-# golang.org/x/sys v0.0.0-20181205085412-a5c9d58dba9a
+# golang.org/x/net v0.0.0-20200114155413-6afb5195e5aa
+golang.org/x/net/internal/socks
+golang.org/x/net/proxy
+# golang.org/x/sys v0.0.0-20190215142949-d0b11bdaac8a
 golang.org/x/sys/unix
 # golang.org/x/text v0.3.0
 golang.org/x/text/transform

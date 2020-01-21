@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"regexp"
@@ -12,6 +14,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
+	"golang.org/x/net/proxy"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
@@ -24,6 +27,11 @@ type Config struct {
 	PrintSuccessAndFail string `mapstructure:"print_success_and_fail_messages_strategy"`
 	WelcomeTimeout      string `mapstructure:"welcome_timeout"`
 	BanDurations        string `mapstructure:"ban_duration"`
+	UseSocks5Proxy      string `mapstructure:"use_socks5_proxy"`
+	Socks5Address       string `mapstructure:"socks5_address"`
+	Socks5Port          string `mapstructure:"socks5_port"`
+	Socks5Login         string `mapstructure:"socks5_login"`
+	Socks5Password      string `mapstructure:"socks5_password"`
 }
 
 var config Config
@@ -40,16 +48,25 @@ func init() {
 }
 
 func main() {
-	token, e := getToken(tgtoken)
-	if e != nil {
-		log.Fatalln(e)
+	token, err := getToken(tgtoken)
+	if err != nil {
+		log.Fatalln(err)
 	}
 	log.Printf("Telegram Bot Token [%v] successfully obtained from env variable $TGTOKEN\n", token)
 
-	var err error
+	var httpClient *http.Client
+	if config.UseSocks5Proxy == "yes" {
+		var err error
+		httpClient, err = initSocks5Client()
+		if err != nil {
+			log.Fatalln(err)
+		}
+	}
+
 	bot, err = tb.NewBot(tb.Settings{
 		Token:  token,
 		Poller: &tb.LongPoller{Timeout: 10 * time.Second},
+		Client: httpClient,
 	})
 	if err != nil {
 		log.Fatalf("Cannot start bot. Error: %v\n", err)
@@ -223,4 +240,18 @@ func getBanDuration() (int64, error) {
 	}
 
 	return time.Now().Add(time.Duration(n) * time.Minute).Unix(), nil
+}
+
+func initSocks5Client() (*http.Client, error) {
+	addr := fmt.Sprintf("%s:%s", config.Socks5Address, config.Socks5Port)
+	dialer, err := proxy.SOCKS5("tcp", addr, &proxy.Auth{User: config.Socks5Login, Password: config.Socks5Password}, proxy.Direct)
+	if err != nil {
+		return nil, fmt.Errorf("cannot init socks5 proxy client dialer: %w", err)
+	}
+
+	httpTransport := &http.Transport{}
+	httpClient := &http.Client{Transport: httpTransport}
+	httpTransport.Dial = dialer.Dial
+
+	return httpClient, nil
 }
