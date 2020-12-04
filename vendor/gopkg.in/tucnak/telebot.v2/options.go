@@ -1,6 +1,12 @@
 package telebot
 
-// Option is a shorcut flag type for certain message features
+import (
+	"encoding/json"
+	"fmt"
+	"strings"
+)
+
+// Option is a shortcut flag type for certain message features
 // (so-called options). It means that instead of passing
 // fully-fledged SendOptions* to Send(), you can use these
 // flags instead.
@@ -51,7 +57,6 @@ func (og *SendOptions) copy() *SendOptions {
 	if cp.ReplyMarkup != nil {
 		cp.ReplyMarkup = cp.ReplyMarkup.copy()
 	}
-
 	return &cp
 }
 
@@ -88,7 +93,7 @@ type ReplyMarkup struct {
 
 	// Requests clients to remove the reply keyboard.
 	//
-	// Dafaults to false.
+	// Defaults to false.
 	ReplyKeyboardRemove bool `json:"remove_keyboard,omitempty"`
 
 	// Use this param if you want to force reply from
@@ -101,22 +106,22 @@ type ReplyMarkup struct {
 	Selective bool `json:"selective,omitempty"`
 }
 
-func (og *ReplyMarkup) copy() *ReplyMarkup {
-	cp := *og
+func (r *ReplyMarkup) copy() *ReplyMarkup {
+	cp := *r
 
-	cp.ReplyKeyboard = make([][]ReplyButton, len(og.ReplyKeyboard))
-	for i, row := range og.ReplyKeyboard {
-		cp.ReplyKeyboard[i] = make([]ReplyButton, len(row))
-		for j, btn := range row {
-			cp.ReplyKeyboard[i][j] = btn
+	if len(r.ReplyKeyboard) > 0 {
+		cp.ReplyKeyboard = make([][]ReplyButton, len(r.ReplyKeyboard))
+		for i, row := range r.ReplyKeyboard {
+			cp.ReplyKeyboard[i] = make([]ReplyButton, len(row))
+			copy(cp.ReplyKeyboard[i], row)
 		}
 	}
 
-	cp.InlineKeyboard = make([][]InlineButton, len(og.InlineKeyboard))
-	for i, row := range og.InlineKeyboard {
-		cp.InlineKeyboard[i] = make([]InlineButton, len(row))
-		for j, btn := range row {
-			cp.InlineKeyboard[i][j] = btn
+	if len(r.InlineKeyboard) > 0 {
+		cp.InlineKeyboard = make([][]InlineButton, len(r.InlineKeyboard))
+		for i, row := range r.InlineKeyboard {
+			cp.InlineKeyboard[i] = make([]InlineButton, len(row))
+			copy(cp.InlineKeyboard[i], row)
 		}
 	}
 
@@ -131,10 +136,9 @@ func (og *ReplyMarkup) copy() *ReplyMarkup {
 type ReplyButton struct {
 	Text string `json:"text"`
 
-	Contact  bool `json:"request_contact,omitempty"`
-	Location bool `json:"request_location,omitempty"`
-
-	Action func(*Callback) `json:"-"`
+	Contact  bool     `json:"request_contact,omitempty"`
+	Location bool     `json:"request_location,omitempty"`
+	Poll     PollType `json:"request_poll,omitempty"`
 }
 
 // InlineKeyboardMarkup represents an inline keyboard that appears
@@ -143,4 +147,140 @@ type InlineKeyboardMarkup struct {
 	// Array of button rows, each represented by
 	// an Array of KeyboardButton objects.
 	InlineKeyboard [][]InlineButton `json:"inline_keyboard,omitempty"`
+}
+
+// MarshalJSON implements json.Marshaler. It allows to pass
+// PollType as keyboard's poll type instead of KeyboardButtonPollType object.
+func (pt PollType) MarshalJSON() ([]byte, error) {
+	var aux = struct {
+		Type string `json:"type"`
+	}{
+		Type: string(pt),
+	}
+	return json.Marshal(&aux)
+}
+
+// Row represents an array of buttons, a row
+type Row []Btn
+
+// Row create a row of buttons
+func (r *ReplyMarkup) Row(many ...Btn) Row {
+	return many
+}
+
+func (r *ReplyMarkup) Inline(rows ...Row) {
+	inlineKeys := make([][]InlineButton, 0, len(rows))
+	for i, row := range rows {
+		keys := make([]InlineButton, 0, len(row))
+		for j, btn := range row {
+			btn := btn.Inline()
+			if btn == nil {
+				panic(fmt.Sprintf(
+					"telebot: button row %d column %d is not an inline button",
+					i, j))
+			}
+			keys = append(keys, *btn)
+		}
+		inlineKeys = append(inlineKeys, keys)
+	}
+
+	r.InlineKeyboard = inlineKeys
+}
+
+func (r *ReplyMarkup) Reply(rows ...Row) {
+	replyKeys := make([][]ReplyButton, 0, len(rows))
+	for i, row := range rows {
+		keys := make([]ReplyButton, 0, len(row))
+		for j, btn := range row {
+			btn := btn.Reply()
+			if btn == nil {
+				panic(fmt.Sprintf(
+					"telebot: button row %d column %d is not a reply button",
+					i, j))
+			}
+			keys = append(keys, *btn)
+		}
+		replyKeys = append(replyKeys, keys)
+	}
+
+	r.ReplyKeyboard = replyKeys
+}
+
+func (r *ReplyMarkup) Text(text string) Btn {
+	return Btn{Text: text}
+}
+
+func (r *ReplyMarkup) Contact(text string) Btn {
+	return Btn{Contact: true, Text: text}
+}
+
+func (r *ReplyMarkup) Location(text string) Btn {
+	return Btn{Location: true, Text: text}
+}
+
+func (r *ReplyMarkup) Poll(text string, poll PollType) Btn {
+	return Btn{Poll: poll, Text: text}
+}
+
+func (r *ReplyMarkup) Data(text, unique string, data ...string) Btn {
+	return Btn{
+		Unique: unique,
+		Text:   text,
+		Data:   strings.Join(data, "|"),
+	}
+}
+
+func (r *ReplyMarkup) URL(text, url string) Btn {
+	return Btn{Text: text, URL: url}
+}
+
+func (r *ReplyMarkup) Query(text, query string) Btn {
+	return Btn{Text: text, InlineQuery: query}
+}
+
+func (r *ReplyMarkup) QueryChat(text, query string) Btn {
+	return Btn{Text: text, InlineQueryChat: query}
+}
+
+func (r *ReplyMarkup) Login(text string, login *Login) Btn {
+	return Btn{Login: login, Text: text}
+}
+
+// Btn is a constructor button, which will later become either a reply, or an inline button.
+type Btn struct {
+	Unique          string
+	Text            string
+	URL             string
+	Data            string
+	InlineQuery     string
+	InlineQueryChat string
+	Contact         bool
+	Location        bool
+	Poll            PollType
+	Login           *Login
+}
+
+func (b Btn) Inline() *InlineButton {
+	return &InlineButton{
+		Unique:          b.Unique,
+		Text:            b.Text,
+		URL:             b.URL,
+		Data:            b.Data,
+		InlineQuery:     b.InlineQuery,
+		InlineQueryChat: b.InlineQueryChat,
+		Login:           b.Login,
+	}
+}
+
+func (b Btn) Reply() *ReplyButton {
+	if b.Unique != "" {
+		return nil
+	}
+
+	return &ReplyButton{
+		Text:     b.Text,
+		Contact:  b.Contact,
+		Location: b.Location,
+		Poll:     b.Poll,
+	}
 }

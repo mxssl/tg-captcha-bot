@@ -9,6 +9,8 @@ import (
 type Message struct {
 	ID int `json:"message_id"`
 
+	InlineID string `json:"-"`
+
 	// For message sent to channels, Sender will be nil
 	Sender *User `json:"from"`
 
@@ -25,6 +27,17 @@ type Message struct {
 	// forwarded from a channel.
 	OriginalChat *Chat `json:"forward_from_chat"`
 
+	// For forwarded messages, identifier of the original message
+	// when forwarded from a channel.
+	OriginalMessageID int `json:"forward_from_message_id"`
+
+	// For forwarded messages, signature of the post author.
+	OriginalSignature string `json:"forward_signature"`
+
+	// For forwarded messages, sender's name from users who
+	// disallow adding a link to their account.
+	OriginalSenderName string `json:"forward_sender_name"`
+
 	// For forwarded messages, unixtime of the original message.
 	OriginalUnixtime int `json:"forward_date"`
 
@@ -34,6 +47,9 @@ type Message struct {
 	// contain further ReplyTo fields even if it
 	// itself is a reply.
 	ReplyTo *Message `json:"reply_to_message"`
+
+	// Shows through which bot the message was sent.
+	Via *User `json:"via_bot"`
 
 	// (Optional) Time of last edit in Unix
 	LastEdit int64 `json:"edit_date"`
@@ -67,7 +83,7 @@ type Message struct {
 	// For an audio recording, information about it.
 	Audio *Audio `json:"audio"`
 
-	// For a gneral file, information about it.
+	// For a general file, information about it.
 	Document *Document `json:"document"`
 
 	// For a photo, all available sizes (thumbnails).
@@ -85,6 +101,9 @@ type Message struct {
 	// For a video, information about it.
 	Video *Video `json:"video"`
 
+	// For a animation, information about it.
+	Animation *Animation `json:"animation"`
+
 	// For a contact, contact information itself.
 	Contact *Contact `json:"contact"`
 
@@ -93,6 +112,12 @@ type Message struct {
 
 	// For a venue, information about it.
 	Venue *Venue `json:"venue"`
+
+	// For a poll, information the native poll.
+	Poll *Poll `json:"poll"`
+
+	// For a dice, information about it.
+	Dice *Dice `json:"dice"`
 
 	// For a service message, represents a user,
 	// that just got added to chat, this message came from.
@@ -136,15 +161,15 @@ type Message struct {
 
 	// For a service message, true if group has been created.
 	//
-	// You would recieve such a message if you are one of
+	// You would receive such a message if you are one of
 	// initial group chat members.
 	//
 	// Sender would lead to creator of the chat.
 	GroupCreated bool `json:"group_chat_created"`
 
-	// For a service message, true if super group has been created.
+	// For a service message, true if supergroup has been created.
 	//
-	// You would recieve such a message if you are one of
+	// You would receive such a message if you are one of
 	// initial group chat members.
 	//
 	// Sender would lead to creator of the chat.
@@ -152,17 +177,17 @@ type Message struct {
 
 	// For a service message, true if channel has been created.
 	//
-	// You would recieve such a message if you are one of
+	// You would receive such a message if you are one of
 	// initial channel administrators.
 	//
 	// Sender would lead to creator of the chat.
 	ChannelCreated bool `json:"channel_chat_created"`
 
-	// For a service message, the destination (super group) you
+	// For a service message, the destination (supergroup) you
 	// migrated to.
 	//
-	// You would recieve such a message when your chat has migrated
-	// to a super group.
+	// You would receive such a message when your chat has migrated
+	// to a supergroup.
 	//
 	// Sender would lead to creator of the migration.
 	MigrateTo int64 `json:"migrate_to_chat_id"`
@@ -170,8 +195,8 @@ type Message struct {
 	// For a service message, the Origin (normal group) you migrated
 	// from.
 	//
-	// You would recieve such a message when your chat has migrated
-	// to a super group.
+	// You would receive such a message when your chat has migrated
+	// to a supergroup.
 	//
 	// Sender would lead to creator of the migration.
 	MigrateFrom int64 `json:"migrate_from_chat_id"`
@@ -180,6 +205,18 @@ type Message struct {
 	// in this field will not contain further ReplyTo fields even
 	// if it is itself a reply.
 	PinnedMessage *Message `json:"pinned_message"`
+
+	// Message is an invoice for a payment.
+	Invoice *Invoice `json:"invoice"`
+
+	// Message is a service message about a successful payment.
+	Payment *Payment `json:"successful_payment"`
+
+	// The domain name of the website on which the user has logged in.
+	ConnectedWebsite string `json:"connected_website,omitempty"`
+
+	// Inline keyboard attached to the message.
+	ReplyMarkup InlineKeyboardMarkup `json:"reply_markup"`
 }
 
 // MessageEntity object represents "special" parts of text messages,
@@ -201,10 +238,16 @@ type MessageEntity struct {
 
 	// (Optional) For EntityTMention entity type only.
 	User *User `json:"user,omitempty"`
+
+	// (Optional) For EntityCodeBlock entity type only.
+	Language string `json:"language,omitempty"`
 }
 
 // MessageSig satisfies Editable interface (see Editable.)
 func (m *Message) MessageSig() (string, int64) {
+	if m.InlineID != "" {
+		return m.InlineID, 0
+	}
 	return strconv.Itoa(m.ID), m.Chat.ID
 }
 
@@ -234,8 +277,7 @@ func (m *Message) Private() bool {
 	return m.Chat.Type == ChatPrivate
 }
 
-// FromGroup returns true, if message came from a group OR
-// a super group.
+// FromGroup returns true, if message came from a group OR a supergroup.
 func (m *Message) FromGroup() bool {
 	return m.Chat.Type == ChatGroup || m.Chat.Type == ChatSuperGroup
 }

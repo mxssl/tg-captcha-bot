@@ -1,5 +1,7 @@
 package telebot
 
+import "encoding/json"
+
 // CallbackEndpoint is an interface any element capable
 // of responding to a callback `\f<unique>`.
 type CallbackEndpoint interface {
@@ -25,6 +27,11 @@ type Callback struct {
 	// Data associated with the callback button. Be aware that
 	// a bad client can send arbitrary data in this field.
 	Data string `json:"data"`
+}
+
+// IsInline says whether message is an inline message.
+func (c *Callback) IsInline() bool {
+	return c.MessageID != ""
 }
 
 // CallbackResponse builds a response to a Callback query.
@@ -62,15 +69,28 @@ type InlineButton struct {
 	// It will be used as a callback endpoint.
 	Unique string `json:"unique,omitempty"`
 
-	Text        string `json:"text"`
-	URL         string `json:"url,omitempty"`
-	Data        string `json:"callback_data,omitempty"`
-	InlineQuery string `json:"switch_inline_query,omitempty"`
-
-	Action func(*Callback) `json:"-"`
+	Text            string `json:"text"`
+	URL             string `json:"url,omitempty"`
+	Data            string `json:"callback_data,omitempty"`
+	InlineQuery     string `json:"switch_inline_query,omitempty"`
+	InlineQueryChat string `json:"switch_inline_query_current_chat"`
+	Login           *Login `json:"login_url,omitempty"`
 }
 
-// CallbackUnique returns InlineButto.Unique.
+// With returns a copy of the button with data.
+func (t *InlineButton) With(data string) *InlineButton {
+	return &InlineButton{
+		Unique:          t.Unique,
+		Text:            t.Text,
+		URL:             t.URL,
+		InlineQuery:     t.InlineQuery,
+		InlineQueryChat: t.InlineQueryChat,
+		Login:           t.Login,
+		Data:            data,
+	}
+}
+
+// CallbackUnique returns InlineButton.Unique.
 func (t *InlineButton) CallbackUnique() string {
 	return "\f" + t.Unique
 }
@@ -78,4 +98,39 @@ func (t *InlineButton) CallbackUnique() string {
 // CallbackUnique returns KeyboardButton.Text.
 func (t *ReplyButton) CallbackUnique() string {
 	return t.Text
+}
+
+// CallbackUnique implements CallbackEndpoint.
+func (t *Btn) CallbackUnique() string {
+	if t.Unique != "" {
+		return "\f" + t.Unique
+	}
+	return t.Text
+}
+
+// Login represents a parameter of the inline keyboard button
+// used to automatically authorize a user. Serves as a great replacement
+// for the Telegram Login Widget when the user is coming from Telegram.
+type Login struct {
+	URL         string `json:"url"`
+	Text        string `json:"forward_text,omitempty"`
+	Username    string `json:"bot_username,omitempty"`
+	WriteAccess bool   `json:"request_write_access,omitempty"`
+}
+
+// MarshalJSON implements json.Marshaler interface.
+// It needed to avoid InlineQueryChat and Login fields conflict.
+// If you have Login field in your button, InlineQueryChat must be skipped.
+func (t *InlineButton) MarshalJSON() ([]byte, error) {
+	type InlineButtonJSON InlineButton
+
+	if t.Login != nil {
+		return json.Marshal(struct {
+			InlineButtonJSON
+			InlineQueryChat string `json:"switch_inline_query_current_chat,omitempty"`
+		}{
+			InlineButtonJSON: InlineButtonJSON(*t),
+		})
+	}
+	return json.Marshal(InlineButtonJSON(*t))
 }

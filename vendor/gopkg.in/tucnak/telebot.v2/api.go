@@ -3,13 +3,12 @@ package telebot
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"mime/multipart"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -18,69 +17,51 @@ import (
 )
 
 // Raw lets you call any method of Bot API manually.
+// It also handles API errors, so you only need to unwrap
+// result field from json data.
 func (b *Bot) Raw(method string, payload interface{}) ([]byte, error) {
-	url := fmt.Sprintf("%s/bot%s/%s", b.URL, b.Token, method)
+	url := b.URL + "/bot" + b.Token + "/" + method
 
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(payload); err != nil {
-		return []byte{}, wrapSystem(err)
+		return nil, err
 	}
 
 	resp, err := b.client.Post(url, "application/json", &buf)
 	if err != nil {
-		return []byte{}, errors.Wrap(err, "http.Post failed")
+		return nil, wrapError(err)
 	}
 	resp.Close = true
 	defer resp.Body.Close()
-	json, err := ioutil.ReadAll(resp.Body)
+
+	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return []byte{}, wrapSystem(err)
+		return nil, wrapError(err)
 	}
 
-	return json, nil
-}
+	if b.verbose {
+		body, _ := json.Marshal(payload)
+		body = bytes.ReplaceAll(body, []byte(`\"`), []byte(`"`))
+		body = bytes.ReplaceAll(body, []byte(`"{`), []byte(`{`))
+		body = bytes.ReplaceAll(body, []byte(`}"`), []byte(`}`))
 
-func addFileToWriter(writer *multipart.Writer, fieldName string, file interface{}) error {
-	var reader io.Reader
-	var part io.Writer
-	var err error
-	var filename string
-
-	if r, ok := file.(io.Reader); ok {
-		// Telegram requires fields to have a filename, otherwise
-		// `Bad Request: wrong URL host` would be returned
-		filename = "empty"
-		reader = r
-	} else if path, ok := file.(string); ok {
-		f, err := os.Open(path)
-		if err != nil {
-			return err
+		indent := func(b []byte) string {
+			buf.Reset()
+			json.Indent(&buf, b, "", "\t")
+			return buf.String()
 		}
-		defer f.Close()
 
-		reader = f
-		filename = filepath.Base(path)
-	} else {
-		return errors.Errorf("File for field `%v` should be an io.ReadCloser or string", fieldName)
+		log.Printf("[verbose] telebot: sent request\n"+
+			"Method: %v\nParams: %v\nResponse: %v",
+			method, indent(body), indent(data))
 	}
 
-	part, err = writer.CreateFormFile(fieldName, filename)
-	if err != nil {
-		return err
-	}
-
-	_, err = io.Copy(part, reader)
-	return err
+	// returning data as well
+	return data, extractOk(data)
 }
 
-func (b *Bot) sendFiles(
-	method string,
-	files map[string]File,
-	params map[string]string) ([]byte, error) {
-	// ---
-	body := &bytes.Buffer{}
+func (b *Bot) sendFiles(method string, files map[string]File, params map[string]string) ([]byte, error) {
 	rawFiles := map[string]interface{}{}
-
 	for name, f := range files {
 		switch {
 		case f.InCloud():
@@ -92,7 +73,7 @@ func (b *Bot) sendFiles(
 		case f.FileReader != nil:
 			rawFiles[name] = f.FileReader
 		default:
-			return nil, errors.Errorf("sendFiles: File for field %s doesn't exist", name)
+			return nil, errors.Errorf("telebot: File for field %s doesn't exist", name)
 		}
 	}
 
@@ -100,116 +81,151 @@ func (b *Bot) sendFiles(
 		return b.Raw(method, params)
 	}
 
-	writer := multipart.NewWriter(body)
+	pipeReader, pipeWriter := io.Pipe()
+	writer := multipart.NewWriter(pipeWriter)
+	go func() {
+		defer pipeWriter.Close()
 
-	for field, file := range rawFiles {
-		if err := addFileToWriter(writer, field, file); err != nil {
-			return nil, wrapSystem(err)
+		for field, file := range rawFiles {
+			if err := addFileToWriter(writer, params["file_name"], field, file); err != nil {
+				pipeWriter.CloseWithError(err)
+				return
+			}
 		}
-	}
-
-	for field, value := range params {
-		if err := writer.WriteField(field, value); err != nil {
-			return nil, wrapSystem(err)
+		for field, value := range params {
+			if err := writer.WriteField(field, value); err != nil {
+				pipeWriter.CloseWithError(err)
+				return
+			}
 		}
-	}
+		if err := writer.Close(); err != nil {
+			pipeWriter.CloseWithError(err)
+			return
+		}
+	}()
 
-	if err := writer.Close(); err != nil {
-		return nil, wrapSystem(err)
-	}
+	url := b.URL + "/bot" + b.Token + "/" + method
 
-	url := fmt.Sprintf("%s/bot%s/%s", b.URL, b.Token, method)
-	req, err := http.NewRequest("POST", url, body)
+	resp, err := b.client.Post(url, writer.FormDataContentType(), pipeReader)
 	if err != nil {
-		return nil, wrapSystem(err)
+		err = wrapError(err)
+		pipeReader.CloseWithError(err)
+		return nil, err
 	}
-
-	req.Header.Add("Content-Type", writer.FormDataContentType())
-
-	resp, err := b.client.Do(req)
-	if err != nil {
-		return nil, errors.Wrap(err, "http.Post failed")
-	}
+	resp.Close = true
+	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusInternalServerError {
-		return nil, errors.New("api error: internal server error")
+		return nil, ErrInternal
 	}
 
-	json, err := ioutil.ReadAll(resp.Body)
+	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, wrapSystem(err)
+		return nil, wrapError(err)
 	}
 
-	return json, nil
+	return data, extractOk(data)
 }
 
-func (b *Bot) sendObject(f *File, what string, params map[string]string) (*Message, error) {
+func addFileToWriter(writer *multipart.Writer, filename, field string, file interface{}) error {
+	var reader io.Reader
+	if r, ok := file.(io.Reader); ok {
+		reader = r
+	} else if path, ok := file.(string); ok {
+		f, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+		reader = f
+	} else {
+		return errors.Errorf("telebot: File for field %v should be an io.ReadCloser or string", field)
+	}
+
+	part, err := writer.CreateFormFile(field, filename)
+	if err != nil {
+		return err
+	}
+
+	_, err = io.Copy(part, reader)
+	return err
+}
+
+func (b *Bot) sendText(to Recipient, text string, opt *SendOptions) (*Message, error) {
+	params := map[string]string{
+		"chat_id": to.Recipient(),
+		"text":    text,
+	}
+	b.embedSendOptions(params, opt)
+
+	data, err := b.Raw("sendMessage", params)
+	if err != nil {
+		return nil, err
+	}
+
+	return extractMessage(data)
+}
+
+func (b *Bot) sendObject(f *File, what string, params map[string]string, files map[string]File) (*Message, error) {
 	sendWhat := "send" + strings.Title(what)
 
 	if what == "videoNote" {
 		what = "video_note"
 	}
 
-	respJSON, err := b.sendFiles(sendWhat, map[string]File{what: *f}, params)
+	sendFiles := map[string]File{what: *f}
+	for k, v := range files {
+		sendFiles[k] = v
+	}
+
+	data, err := b.sendFiles(sendWhat, sendFiles, params)
 	if err != nil {
 		return nil, err
 	}
 
-	return extractMsgResponse(respJSON)
+	return extractMessage(data)
 }
 
 func (b *Bot) getMe() (*User, error) {
-	meJSON, err := b.Raw("getMe", nil)
+	data, err := b.Raw("getMe", nil)
 	if err != nil {
 		return nil, err
 	}
 
-	var botInfo struct {
-		Ok          bool
-		Result      *User
-		Description string
+	var resp struct {
+		Result *User
 	}
-
-	err = json.Unmarshal(meJSON, &botInfo)
-	if err != nil {
-		return nil, errors.Wrap(err, "bad response json")
+	if err := json.Unmarshal(data, &resp); err != nil {
+		return nil, wrapError(err)
 	}
-
-	if !botInfo.Ok {
-		return nil, errors.Errorf("api error: %s", botInfo.Description)
-	}
-
-	return botInfo.Result, nil
+	return resp.Result, nil
 
 }
 
-func (b *Bot) getUpdates(offset int, timeout time.Duration) (upd []Update, err error) {
+func (b *Bot) getUpdates(offset, limit int, timeout time.Duration, allowed []string) ([]Update, error) {
 	params := map[string]string{
 		"offset":  strconv.Itoa(offset),
 		"timeout": strconv.Itoa(int(timeout / time.Second)),
 	}
-	updatesJSON, errCommand := b.Raw("getUpdates", params)
-	if errCommand != nil {
-		err = errCommand
-		return
 
+	if limit != 0 {
+		params["limit"] = strconv.Itoa(limit)
 	}
-	var updatesReceived struct {
-		Ok          bool
-		Result      []Update
-		Description string
+	if len(allowed) > 0 {
+		data, _ := json.Marshal(allowed)
+		params["allowed_updates"] = string(data)
 	}
 
-	err = json.Unmarshal(updatesJSON, &updatesReceived)
+	data, err := b.Raw("getUpdates", params)
 	if err != nil {
-		err = errors.Wrap(err, "bad response json")
-		return
+		return nil, err
 	}
 
-	if !updatesReceived.Ok {
-		err = errors.Errorf("api error: %s", updatesReceived.Description)
-		return
+	var resp struct {
+		Result []Update
 	}
-
-	return updatesReceived.Result, nil
+	if err := json.Unmarshal(data, &resp); err != nil {
+		return nil, wrapError(err)
+	}
+	return resp.Result, nil
 }

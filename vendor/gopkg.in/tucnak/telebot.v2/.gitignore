@@ -23,4 +23,12 @@ _testmain.go
 *.test
 *.prof
 
-/.idea
+.idea
+.DS_Store
+coverage.txt
+
+# Terraform artifacts
+*.zip
+.terraform*
+terraform*
+/examples/awslambdaechobot/awslambdaechobot

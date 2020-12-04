@@ -3,6 +3,7 @@
 
 [![GoDoc](https://godoc.org/gopkg.in/tucnak/telebot.v2?status.svg)](https://godoc.org/gopkg.in/tucnak/telebot.v2)
 [![Travis](https://travis-ci.org/tucnak/telebot.svg?branch=v2)](https://travis-ci.org/tucnak/telebot)
+[![codecov.io](https://codecov.io/gh/tucnak/telebot/coverage.svg?branch=develop)](https://codecov.io/gh/tucnak/telebot)
 
 ```bash
 go get -u gopkg.in/tucnak/telebot.v2
@@ -43,17 +44,19 @@ Let's take a look at the minimal telebot setup:
 package main
 
 import (
-	"time"
 	"log"
+	"time"
 
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
 func main() {
 	b, err := tb.NewBot(tb.Settings{
-		Token:  "TOKEN_HERE",
-		// You can also set custom API URL. If field is empty it equals to "https://api.telegram.org"
+		// You can also set custom API URL.
+		// If field is empty it equals to "https://api.telegram.org".
 		URL: "http://195.129.111.17:8012",
+
+		Token:  "TOKEN_HERE",
 		Poller: &tb.LongPoller{Timeout: 10 * time.Second},
 	})
 
@@ -63,7 +66,7 @@ func main() {
 	}
 
 	b.Handle("/hello", func(m *tb.Message) {
-		b.Send(m.Sender, "hello world")
+		b.Send(m.Sender, "Hello World!")
 	})
 
 	b.Start()
@@ -71,7 +74,7 @@ func main() {
 
 ```
 
-Simple, innit? Telebot's routing system takes care of deliviering updates
+Simple, innit? Telebot's routing system takes care of delivering updates
 to their endpoints, so in order to get to handle any meaningful event,
 all you got to do is just plug your function to one of the Telebot-provided
 endpoints. You can find the full list
@@ -93,19 +96,21 @@ b.Handle(tb.OnChannelPost, func (m *tb.Message) {
 	// channel posts only
 })
 
-b.Handle(tb.Query, func (q *tb.Query) {
+b.Handle(tb.OnQuery, func (q *tb.Query) {
 	// incoming inline queries
 })
 ```
 
-Now there's a dozen of supported endpoints (see package consts). Let me know
+There's dozens of supported endpoints (see package consts). Let me know
 if you'd like to see some endpoint or endpoint idea implemented. This system
 is completely extensible, so I can introduce them without breaking
-backwards-compatibity.
+backwards-compatibility.
 
 ## Poller
 Telebot doesn't really care how you provide it with incoming updates, as long
-as you set it up with a Poller:
+as you set it up with a Poller, or call ProcessUpdate for each update (see
+[examples/awslambdaechobot](examples/awslambdaechobot)):
+
 ```go
 // Poller is a provider of Updates.
 //
@@ -123,11 +128,10 @@ type Poller interface {
 }
 ```
 
-Telegram Bot API supports long polling and webhook integration. I don't really
-care about webhooks, so the only concrete Poller you'll find in the library
-is the `LongPoller`. Poller means you can plug telebot into whatever existing
-bot infrastructure (load balancers?) you need, if you need to. Another great thing
-about pollers is that you can chain them, making some sort of middleware:
+Telegram Bot API supports long polling and webhook integration. Poller means you
+can plug telebot into whatever existing bot infrastructure (load balancers?) you
+need, if you need to. Another great thing about pollers is that you can chain
+them, making some sort of middleware:
 ```go
 poller := &tb.LongPoller{Timeout: 15 * time.Second}
 spamProtected := tb.NewMiddlewarePoller(poller, func(upd *tb.Update) bool {
@@ -148,12 +152,10 @@ bot, _ := tb.NewBot(tb.Settings{
 })
 
 // graceful shutdown
-go func() {
-	<-time.After(N * time.Second)
-	bot.Stop()
-})()
+time.AfterFunc(N * time.Second, b.Stop)
 
-bot.Start() // blocks until shutdown
+// blocks until shutdown
+bot.Start()
 
 fmt.Println(poller.LastUpdateID) // 134237
 ```
@@ -203,20 +205,20 @@ to marshal them into whatever format, `File` only contain public fields, so no
 data will ever be lost.
 
 ## Sendable
-Send is undoubteldy the most important method in Telebot. `Send()` accepts a
-`Recipient` (could be user, group or a channel) and a `Sendable`. FYI, not only
-all telebot-provided media types (`Photo`, `Audio`, `Video`, etc.) are `Sendable`,
-but you can create composite types of your own. As long as they satisfy `Sendable`,
+Send is undoubtedly the most important method in Telebot. `Send()` accepts a
+`Recipient` (could be user, group or a channel) and a `Sendable`. Other types other than
+the telebot-provided media types (`Photo`, `Audio`, `Video`, etc.) are `Sendable`.
+If you create composite types of your own, and they satisfy the `Sendable` interface,
 Telebot will be able to send them out.
 
 ```go
 // Sendable is any object that can send itself.
 //
 // This is pretty cool, since it lets bots implement
-// custom Sendables for complex kind of media or
+// custom Sendables for complex kinds of media or
 // chat objects spanning across multiple messages.
 type Sendable interface {
-    Send(*Bot, Recipient, *SendOptions) (*Message, error)
+	Send(*Bot, Recipient, *SendOptions) (*Message, error)
 }
 ```
 
@@ -270,7 +272,7 @@ it made sense for *any* Go struct to be editable as a Telegram message, to imple
 // for edit operations.
 //
 // Use case: DB model struct for messages to-be
-// edited with, say two collums: msg_id,chat_id
+// edited with, say two columns: msg_id,chat_id
 // could easily implement MessageSig() making
 // instances of stored messages editable.
 type Editable interface {
@@ -305,7 +307,7 @@ var msgs []tb.StoredMessage
 db.Find(&msgs) // gorm syntax
 
 for _, msg := range msgs {
-	bot.Edit(&msg, "Updated text.")
+	bot.Edit(&msg, "Updated text")
 	// or
 	bot.Delete(&msg)
 }
@@ -324,45 +326,43 @@ bot.EditCaption(m, "new caption")
 
 ## Keyboards
 Telebot supports both kinds of keyboards Telegram provides: reply and inline
-keyboards. Any button can also act as an endpoints for `Handle()`:
+keyboards. Any button can also act as an endpoints for `Handle()`.
+
+In `v2.2` we're introducing a little more convenient way in building keyboards.
+The main goal is to avoid a lot of boilerplate and to make code clearer.
 
 ```go
 func main() {
 	b, _ := tb.NewBot(tb.Settings{...})
 
-	// This button will be displayed in user's
-	// reply keyboard.
-	replyBtn := tb.ReplyButton{Text: "🌕 Button #1"}
-	replyKeys := [][]tb.ReplyButton{
-		[]tb.ReplyButton{replyBtn},
-		// ...
-	}
+	var (
+		// Universal markup builders.
+		menu     = &ReplyMarkup{ResizeReplyKeyboard: true}
+		selector = &ReplyMarkup{}
 
-	// And this one — just under the message itself.
-	// Pressing it will cause the client to send
-	// the bot a callback.
-	//
-	// Make sure Unique stays unique as it has to be
-	// for callback routing to work.
-	inlineBtn := tb.InlineButton{
-		Unique: "sad_moon",
-		Text: "🌚 Button #2",
-	}
-	inlineKeys := [][]tb.InlineButton{
-		[]tb.InlineButton{inlineBtn},
-		// ...
-	}
+		// Reply buttons.
+		btnHelp     = menu.Text("ℹ Help")
+		btnSettings = menu.Text("⚙ Settings")
 
-	b.Handle(&replyBtn, func(m *tb.Message) {
-		// on reply button pressed
-	})
+		// Inline buttons.
+		//
+		// Pressing it will cause the client to
+		// send the bot a callback.
+		//
+		// Make sure Unique stays unique as per button kind,
+		// as it has to be for callback routing to work.
+		//
+		btnPrev = selector.Data("⬅", "prev", ...)
+		btnNext = selector.Data("➡", "next", ...)
+	)
 
-	b.Handle(&inlineBtn, func(c *tb.Callback) {
-		// on inline button pressed (callback!)
-
-		// always respond!
-		b.Respond(c, &tb.CallbackResponse{...})
-	})
+	menu.Reply(
+		menu.Row(btnHelp),
+		menu.Row(btnSettings),
+	)
+	selector.Inline(
+		selector.Row(btnPrev, btnNext),
+	)
 
 	// Command: /start <PAYLOAD>
 	b.Handle("/start", func(m *tb.Message) {
@@ -370,14 +370,40 @@ func main() {
 			return
 		}
 
-		b.Send(m.Sender, "Hello!", &tb.ReplyMarkup{
-			ReplyKeyboard:  replyKeys,
-			InlineKeyboard: inlineKeys,
-		})
+		b.Send(m.Sender, "Hello!", menu)
+	})
+
+	// On reply button pressed (message)
+	b.Handle(&btnHelp, func(m *tb.Message) {...})
+
+	// On inline button pressed (callback)
+	b.Handle(&btnPrev, func(c *tb.Callback) {
+		// ...
+		// Always respond!
+		b.Respond(c, &tb.CallbackResponse{...})
 	})
 
 	b.Start()
 }
+```
+
+You can use markup constructor for every type of possible buttons:
+```go
+r := &ReplyMarkup{}
+
+// Reply buttons:
+r.Text("Hello!")
+r.Contact("Send phone number")
+r.Location("Send location")
+r.Poll(tb.PollQuiz)
+
+// Inline buttons:
+r.Data("Show help", "help") // data is optional
+r.Data("Delete item", "delete", item.ID)
+r.URL("Visit", "https://google.com")
+r.Query("Search", query)
+r.QueryChat("Share", query)
+r.Login("Login", &tb.Login{...})
 ```
 
 ## Inline mode
@@ -403,32 +429,33 @@ b.Handle(tb.OnQuery, func(q *tb.Query) {
 		}
 
 		results[i] = result
-		results[i].SetResultID(strconv.Itoa(i)) // It's needed to set a unique string ID for each result
+		// needed to set a unique string ID for each result
+		results[i].SetResultID(strconv.Itoa(i))
 	}
 
 	err := b.Answer(q, &tb.QueryResponse{
-		Results: results,
+		Results:   results,
 		CacheTime: 60, // a minute
 	})
 
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
 })
 ```
 
-There's not much to talk about really. It also support some form of authentication
+There's not much to talk about really. It also supports some form of authentication
 through deep-linking. For that, use fields `SwitchPMText` and `SwitchPMParameter`
 of `QueryResponse`.
 
 # Contributing
 
 1. Fork it
-2. Clone it: `git clone https://github.com/tucnak/telebot`
-3. Create your feature branch: `git checkout -b my-new-feature`
+2. Clone develop: `git clone -b develop https://github.com/tucnak/telebot`
+3. Create your feature branch: `git checkout -b new-feature`
 4. Make changes and add them: `git add .`
-5. Commit: `git commit -m 'Add some feature'`
-6. Push: `git push origin my-new-feature`
+5. Commit: `git commit -m "Add some feature"`
+6. Push: `git push origin new-feature`
 7. Pull request
 
 # Donate

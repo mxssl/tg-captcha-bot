@@ -5,7 +5,7 @@ import (
 )
 
 // Album lets you group multiple media (so-called InputMedia)
-// into a single messsage.
+// into a single message.
 //
 // On older clients albums look like N regular messages.
 type Album []InputMedia
@@ -26,7 +26,8 @@ type Photo struct {
 	Height int `json:"height"`
 
 	// (Optional)
-	Caption string `json:"caption,omitempty"`
+	Caption   string    `json:"caption,omitempty"`
+	ParseMode ParseMode `json:"parse_mode,omitempty"`
 }
 
 type photoSize struct {
@@ -80,9 +81,16 @@ type Audio struct {
 
 	// (Optional)
 	Caption   string `json:"caption,omitempty"`
+	Thumbnail *Photo `json:"thumb,omitempty"`
 	Title     string `json:"title,omitempty"`
 	Performer string `json:"performer,omitempty"`
 	MIME      string `json:"mime_type,omitempty"`
+	FileName  string `json:"file_name,omitempty"`
+}
+
+// MediaFile returns &Audio.File
+func (a *Audio) MediaFile() *File {
+	return &a.File
 }
 
 // Document object represents a general file (as opposed to Photo or Audio).
@@ -90,13 +98,16 @@ type Audio struct {
 type Document struct {
 	File
 
-	// Original filename as defined by sender.
-	FileName string `json:"file_name"`
-
 	// (Optional)
 	Thumbnail *Photo `json:"thumb,omitempty"`
 	Caption   string `json:"caption,omitempty"`
 	MIME      string `json:"mime_type"`
+	FileName  string `json:"file_name,omitempty"`
+}
+
+// MediaFile returns &Document.File
+func (d *Document) MediaFile() *File {
+	return &d.File
 }
 
 // Video object represents a video file.
@@ -113,11 +124,33 @@ type Video struct {
 	Thumbnail         *Photo `json:"thumb,omitempty"`
 	SupportsStreaming bool   `json:"supports_streaming,omitempty"`
 	MIME              string `json:"mime_type,omitempty"`
+	FileName          string `json:"file_name,omitempty"`
 }
 
 // MediaFile returns &Video.File
 func (v *Video) MediaFile() *File {
 	return &v.File
+}
+
+// Animation object represents a animation file.
+type Animation struct {
+	File
+
+	Width  int `json:"width"`
+	Height int `json:"height"`
+
+	Duration int `json:"duration,omitempty"`
+
+	// (Optional)
+	Caption   string `json:"caption,omitempty"`
+	Thumbnail *Photo `json:"thumb,omitempty"`
+	MIME      string `json:"mime_type,omitempty"`
+	FileName  string `json:"file_name,omitempty"`
+}
+
+// MediaFile returns &Animation.File
+func (a *Animation) MediaFile() *File {
+	return &a.File
 }
 
 // Voice object represents a voice note.
@@ -176,4 +209,11 @@ type Venue struct {
 	// (Optional)
 	FoursquareID   string `json:"foursquare_id,omitempty"`
 	FoursquareType string `json:"foursquare_type,omitempty"`
+}
+
+// Dice object represents a dice with a random value
+// from 1 to 6 for currently supported base emoji.
+type Dice struct {
+	Type  DiceType `json:"emoji"`
+	Value int      `json:"value"`
 }
