@@ -1,4 +1,5 @@
 # github.com/fsnotify/fsnotify v1.4.9
+## explicit
 github.com/fsnotify/fsnotify
 # github.com/hashicorp/hcl v1.0.0
 github.com/hashicorp/hcl
@@ -11,39 +12,53 @@ github.com/hashicorp/hcl/hcl/token
 github.com/hashicorp/hcl/json/parser
 github.com/hashicorp/hcl/json/scanner
 github.com/hashicorp/hcl/json/token
-# github.com/magiconair/properties v1.8.4
+# github.com/magiconair/properties v1.8.5
+## explicit
 github.com/magiconair/properties
-# github.com/mitchellh/mapstructure v1.4.0
+# github.com/mitchellh/mapstructure v1.4.1
+## explicit
 github.com/mitchellh/mapstructure
-# github.com/pelletier/go-toml v1.8.1
+# github.com/pelletier/go-toml v1.9.0
+## explicit
 github.com/pelletier/go-toml
 # github.com/pkg/errors v0.9.1
+## explicit
 github.com/pkg/errors
-# github.com/spf13/afero v1.4.1
+# github.com/spf13/afero v1.6.0
+## explicit
 github.com/spf13/afero
 github.com/spf13/afero/mem
 # github.com/spf13/cast v1.3.1
+## explicit
 github.com/spf13/cast
 # github.com/spf13/jwalterweatherman v1.1.0
+## explicit
 github.com/spf13/jwalterweatherman
 # github.com/spf13/pflag v1.0.5
+## explicit
 github.com/spf13/pflag
 # github.com/spf13/viper v1.7.1
+## explicit
 github.com/spf13/viper
 # github.com/subosito/gotenv v1.2.0
 github.com/subosito/gotenv
-# golang.org/x/net v0.0.0-20201202161906-c7110b5ffcbb
+# golang.org/x/net v0.0.0-20210508051633-16afe75a6701
+## explicit
 golang.org/x/net/internal/socks
 golang.org/x/net/proxy
-# golang.org/x/sys v0.0.0-20201202213521-69691e467435
+# golang.org/x/sys v0.0.0-20210507161434-a76c4d0a0096
+## explicit
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
-# golang.org/x/text v0.3.4
+# golang.org/x/text v0.3.6
 golang.org/x/text/transform
 golang.org/x/text/unicode/norm
 # gopkg.in/ini.v1 v1.62.0
+## explicit
 gopkg.in/ini.v1
 # gopkg.in/tucnak/telebot.v2 v2.3.5
+## explicit
 gopkg.in/tucnak/telebot.v2
 # gopkg.in/yaml.v2 v2.4.0
+## explicit
 gopkg.in/yaml.v2
