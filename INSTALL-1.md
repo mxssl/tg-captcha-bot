@@ -22,7 +22,7 @@ version: '2'
 
 services:
   tg-captcha-bot:
-    image: mxssl/tg-captcha-bot:v1.1.1
+    image: mxssl/tg-captcha-bot:v1.1.2
     volumes:
       - ./config.toml:/config.toml
     restart: unless-stopped
