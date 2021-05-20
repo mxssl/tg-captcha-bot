@@ -46,6 +46,9 @@ Environment="CONFIG_PATH=/etc/tg-captcha-bot"
 Type=simple
 ExecStart=/usr/local/bin/tg-captcha-bot
 
+Restart=always
+RestartSec=3s
+
 [Install]
 WantedBy=multi-user.target
 ```
