@@ -16,9 +16,9 @@ cd tg-captcha-bot
 2. Download bot binary and move it to needed directory
 
 ```bash
-wget https://github.com/mxssl/tg-captcha-bot/releases/download/v1.1.2/tg-captcha-bot_1.1.2_linux_amd64.tar.gz
+wget https://github.com/mxssl/tg-captcha-bot/releases/download/v1.1.3/tg-captcha-bot_1.1.3_linux_amd64.tar.gz
 
-tar xvzf tg-captcha-bot_1.1.2_linux_amd64.tar.gz
+tar xvzf tg-captcha-bot_1.1.3_linux_amd64.tar.gz
 
 mv tg-captcha-bot /usr/local/bin/tg-captcha-bot
 
