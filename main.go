@@ -117,7 +117,12 @@ func challengeUser(m *tb.Message) {
 		Unique: "challenge_btn",
 		Text:   config.ButtonText,
 	}}}
-	challengeMsg, _ := bot.Reply(m, config.WelcomeMessage, &tb.ReplyMarkup{InlineKeyboard: inlineKeys})
+
+	challengeMsg, err := bot.Reply(m, config.WelcomeMessage, &tb.ReplyMarkup{InlineKeyboard: inlineKeys})
+	if err != nil {
+		log.Printf("Can't send challenge msg: %v", err)
+		return
+	}
 
 	n, err := strconv.ParseInt(config.WelcomeTimeout, 10, 64)
 	if err != nil {
