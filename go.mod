@@ -6,7 +6,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/viper v1.10.1
 	golang.org/x/net v0.0.0-20211118161319-6a13c67c3ce4
-	gopkg.in/tucnak/telebot.v2 v2.4.1
+	gopkg.in/tucnak/telebot.v2 v2.5.0
 )
 
 require (
