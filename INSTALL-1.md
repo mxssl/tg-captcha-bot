@@ -49,4 +49,7 @@ docker-compose ps
 docker-compose logs
 ```
 
-6. Add the bot to your supergroup and give it administrator privileges
+6. Grant to the bot "Restrict, ban and unban members" permission with the
+   [@BotFather](https://t.me/BotFather) `/mybots` -> `@YourBot` -> `Bot
+   Settings` -> `Group Admin Rights` menu
+7. Add the bot to your supergroup and give it administrator privileges

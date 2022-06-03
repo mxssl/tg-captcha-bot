@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-Obtain bot token from [@BotFather](https://t.me/BotFather)
+1. Obtain bot token from [@BotFather](https://t.me/BotFather)
 
 ## Instructions
 
@@ -72,4 +72,7 @@ systemctl status tg-captcha-bot.service
 journalctl -u tg-captcha-bot.service
 ```
 
-8. Add the bot to your supergroup and give it administrator privileges
+8. Grant to the bot "Restrict, ban and unban members" permission with the
+   [@BotFather](https://t.me/BotFather) `/mybots` -> `@YourBot` -> `Bot
+   Settings` -> `Group Admin Rights` menu
+9. Add the bot to your supergroup and give it administrator privileges
