@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -256,7 +258,11 @@ func initSocks5Client() (*http.Client, error) {
 
 	httpTransport := &http.Transport{}
 	httpClient := &http.Client{Transport: httpTransport}
-	httpTransport.Dial = dialer.Dial
+	dialContext := func(ctx context.Context, network, address string) (net.Conn, error) {
+		return dialer.Dial(network, address)
+	}
+
+	httpTransport.DialContext = dialContext
 
 	return httpClient, nil
 }

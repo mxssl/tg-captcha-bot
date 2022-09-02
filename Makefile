@@ -9,7 +9,7 @@ export GO111MODULE=on
 all: build
 
 build:
-	go build -v -mod=vendor -o ${BINARY_NAME}
+	go build -v -o ${BINARY_NAME}
 
 clean:
 	rm -f ${BINARY_NAME}
