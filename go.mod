@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/pkg/errors v0.9.1
-	github.com/spf13/viper v1.12.0
+	github.com/spf13/viper v1.13.0
 	golang.org/x/net v0.0.0-20220826154423-83b083e8dc8b
 	gopkg.in/tucnak/telebot.v2 v2.5.0
 )
