@@ -38,7 +38,3 @@ This bot has been tested on several supergroups (2000+ people) for a long time a
 ## Сustomization
 
 You can change several bot's settings (welcome message, ban duration, socks5 proxy server) through the configuration file `config.toml`
-
-## Contacts
-
-If you have questions feel free to ask me in TG [@mxssl](https://t.me/mxssl)
