@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-Obtain bot token from [@BotFather](https://t.me/BotFather)
+1. Obtain bot token from [@BotFather](https://t.me/BotFather)
 
 ## Instructions
 
@@ -18,7 +18,7 @@ cd tg-captcha-bot
 ```bash
 wget https://github.com/mxssl/tg-captcha-bot/releases/download/v1.1.6/tg-captcha-bot_1.1.6_linux_amd64.tar.gz
 
-tar xvzf tg-captcha-bot_1.1.4_linux_amd64.tar.gz
+tar xvzf tg-captcha-bot_1.1.5_linux_amd64.tar.gz
 
 mv tg-captcha-bot /usr/local/bin/tg-captcha-bot
 
@@ -72,4 +72,7 @@ systemctl status tg-captcha-bot.service
 journalctl -u tg-captcha-bot.service
 ```
 
-8. Add the bot to your supergroup and give it administrator privileges
+8. Grant to the bot "Restrict, ban and unban members" permission with the
+   [@BotFather](https://t.me/BotFather) `/mybots` -> `@YourBot` -> `Bot
+   Settings` -> `Group Admin Rights` menu
+9. Add the bot to your supergroup and give it administrator privileges
