@@ -21,7 +21,7 @@ version: '3'
 
 services:
   tg-captcha-bot:
-    image: mxssl/tg-captcha-bot:v1.1.7
+    image: mxssl/tg-captcha-bot:v1.1.9
     volumes:
       - ./config.toml:/config.toml
     restart: unless-stopped
