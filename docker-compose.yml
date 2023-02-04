@@ -1,4 +1,4 @@
-version: '2'
+version: '3'
 
 services:
   tg-captcha-bot:
@@ -10,4 +10,4 @@ services:
       - ./config.toml:/config.toml
     restart: unless-stopped
     environment:
-      - TGTOKEN=your_token
+      TGTOKEN: <your_telegram_bot_token_here>

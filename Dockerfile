@@ -1,6 +1,4 @@
-FROM golang:1.19.5-alpine3.16 as builder
-
-ENV GO111MODULE=on
+FROM golang:1.20.0-alpine3.17 as builder
 
 WORKDIR /go/src/github.com/mxssl/tg-captcha-bot
 COPY . .
@@ -13,8 +11,6 @@ RUN apk add --no-cache \
 
 # Compile binary
 RUN CGO_ENABLED=0 \
-  GOOS=`go env GOHOSTOS` \
-  GOARCH=`go env GOHOSTARCH` \
   go build -v -o bot
 
 # Copy compiled binary to clear Alpine Linux image

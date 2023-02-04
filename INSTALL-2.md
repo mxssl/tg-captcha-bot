@@ -2,9 +2,8 @@
 
 ## Prerequisites
 
-1. Obtain bot token from [@BotFather](https://t.me/BotFather)
-2. Install [Docker](https://docs.docker.com/install)
-3. Install [Docker Compose](https://docs.docker.com/compose/install)
+- Obtain bot token from [@BotFather](https://t.me/BotFather)
+- Install [Docker](https://docs.docker.com/install)
 
 ## Instructions
 
@@ -30,26 +29,26 @@ services:
       - ./config.toml:/config.toml
     restart: unless-stopped
     environment:
-      - TGTOKEN=your_token
+      TGTOKEN: <your_telegram_bot_token_here>
 ```
 
 3. Build a Docker container
 
 ```bash
-docker-compose build
+docker compose build
 ```
 
 4. Run the container
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 5. Check that the bot started correctly
 
 ```bash
-docker-compose ps
-docker-compose logs
+docker compose ps
+docker compose logs
 ```
 
 6. Add the bot to your supergroup and give it administrator privileges

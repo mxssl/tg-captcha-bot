@@ -1,10 +1,9 @@
-# docker-compose: use already builded docker container
+# docker-compose: use already built docker container image
 
 ## Prerequisites
 
-1. Obtain bot token from [@BotFather](https://t.me/BotFather)
-2. Install [Docker](https://docs.docker.com/install)
-3. Install [Docker Compose](https://docs.docker.com/compose/install)
+- Obtain bot token from [@BotFather](https://t.me/BotFather)
+- Install [Docker](https://docs.docker.com/install)
 
 ## Instructions
 
@@ -18,35 +17,35 @@ cd tg-captcha-bot
 2. Add a token from BotFather to env variable in docker-compose.yml
 
 ```yaml
-version: '2'
+version: '3'
 
 services:
   tg-captcha-bot:
-    image: mxssl/tg-captcha-bot:v1.1.6
+    image: mxssl/tg-captcha-bot:v1.1.7
     volumes:
       - ./config.toml:/config.toml
     restart: unless-stopped
     environment:
-      - TGTOKEN=your_token
+      TGTOKEN: <your_telegram_bot_token_here>
 ```
 
 3. Pull the container
 
 ```bash
-docker-compose pull
+docker compose pull
 ```
 
 4. Run the container
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 5. Check that the bot started correctly
 
 ```bash
-docker-compose ps
-docker-compose logs
+docker compose ps
+docker compose logs
 ```
 
 6. Add the bot to your supergroup and give it administrator privileges
