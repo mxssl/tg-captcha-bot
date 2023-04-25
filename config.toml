@@ -3,6 +3,9 @@
 # Button text
 button_text = "I'm not a robot!"
 
+# Fake button text
+ban_button_text = "Я спамер, забаньте меня."
+
 # Bot sends this message to new users
 welcome_message = "Hello! This is the spam protection system. Please press the button within 30 seconds or you will be banned!"
 
@@ -20,6 +23,9 @@ welcome_timeout = "30"
 
 # If the new user does not press the button, the bot will ban the user for this duration of time. Can be "forever" or number of minutes ("10")
 ban_duration = "forever"
+
+# The ban duration for a user if they clicked the wrong button.
+fake_ban_duration_min = "1"
 
 # Do you want to use a socks5 proxy server? Can be "yes" or "no"
 use_socks5_proxy = "no"
