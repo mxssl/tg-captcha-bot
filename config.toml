@@ -4,7 +4,7 @@
 button_text = "I'm not a robot!"
 
 # Fake button text
-ban_button_text = "Я спамер, забаньте меня."
+ban_button_text = "I am a spammer, ban me."
 
 # Bot sends this message to new users
 welcome_message = "Hello! This is the spam protection system. Please press the button within 30 seconds or you will be banned!"
