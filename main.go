@@ -268,6 +268,7 @@ func fakeChallenge(c *tb.Callback) {
         if err != nil {
                 log.Println(err)
         }
+           log.Printf("User: %v was banned by fake button in chat: %v for: %v minutes", c.Sender, c.Message.Chat, config.FakeBanDurationMin)
 }
 
 
