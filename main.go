@@ -99,15 +99,22 @@ func main() {
 }
 
 
-func shuffleButtons(buttons [][]tb.InlineButton) [][]tb.InlineButton {
-        if rand.Intn(2) == 0 {
-                return buttons
-        }
-        return [][]tb.InlineButton{
-                {buttons[0][1], buttons[0][0]},
-        }
+//func shuffleButtons(buttons [][]tb.InlineButton) [][]tb.InlineButton {
+//      if rand.Intn(2) == 0 {
+//              return buttons
+//      }
+//      return [][]tb.InlineButton{
+//              {buttons[0][1], buttons[0][0]},
+//      }
+//}
+func shuffleButtons(buttons []tb.InlineButton) [][]tb.InlineButton {
+    r := rand.New(rand.NewSource(time.Now().Unix()))
+    shuffled := make([]tb.InlineButton, len(buttons))
+    for i, idx := range r.Perm(len(buttons)) {
+        shuffled[i] = buttons[idx]
+    }
+    return [][]tb.InlineButton{shuffled}
 }
-
 
 func challengeUser(m *tb.Message) {
         if m.UserJoined.ID != m.Sender.ID {
@@ -138,11 +145,19 @@ func challengeUser(m *tb.Message) {
                 Text:   config.FakeButton,
                 Data:   "ban_btn",
         }
-        inlineKeys := [][]tb.InlineButton{
-                {challengeBtn, banBtn},
+
+        banBtn2 := tb.InlineButton{
+                Unique: "ban_btn_2",
+                Text:   config.FakeButton,
+                Data:   "ban_btn_2",
         }
 
-        shuffledKeys := shuffleButtons(inlineKeys)
+//      inlineKeys := [][]tb.InlineButton{
+//              {challengeBtn, banBtn, banBtn2},
+//      }
+
+        //shuffledKeys := shuffleButtons(inlineKeys)
+        shuffledKeys := shuffleButtons([]tb.InlineButton{challengeBtn, banBtn, banBtn2})
 
        challengeMsg, err := bot.Reply(m, config.WelcomeMessage, &tb.ReplyMarkup{InlineKeyboard: shuffledKeys})
           if err != nil {
@@ -152,6 +167,7 @@ func challengeUser(m *tb.Message) {
 
         bot.Handle(&challengeBtn, passChallenge)
         bot.Handle(&banBtn, fakeChallenge)
+        bot.Handle(&banBtn2, fakeChallenge)
 
         n, err := strconv.ParseInt(config.WelcomeTimeout, 10, 64)
         if err != nil {
