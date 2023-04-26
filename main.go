@@ -44,6 +44,8 @@ var passedUsers = sync.Map{}
 var bot *tb.Bot
 var tgtoken = "TGTOKEN"
 var configPath = "CONFIG_PATH"
+var handledUsers = sync.Map{}
+
 
 func init() {
         err := readConfig()
@@ -173,39 +175,43 @@ func challengeUser(m *tb.Message) {
         if err != nil {
                 log.Println(err)
         }
-        time.AfterFunc(time.Duration(n)*time.Second, func() {
-                _, passed := passedUsers.Load(m.UserJoined.ID)
-                if !passed {
-                        banDuration, e := getBanDuration()
-                        if e != nil {
-                                log.Println(e)
-                        }
-                        chatMember := tb.ChatMember{User: m.UserJoined, RestrictedUntil: banDuration}
-                        err := bot.Ban(m.Chat, &chatMember)
-                        if err != nil {
-                                log.Println(err)
-                        }
-
-                        if config.PrintSuccessAndFail == "show" {
-                                _, err := bot.Edit(challengeMsg, config.AfterFailMessage)
-                                if err != nil {
-                                        log.Println(err)
-                                }
-                        } else if config.PrintSuccessAndFail == "del" {
-                                err := bot.Delete(m)
-                                if err != nil {
-                                        log.Println(err)
-                                }
-                                err = bot.Delete(challengeMsg)
-                                if err != nil {
-                                        log.Println(err)
-                                }
-                        }
-
-                        log.Printf("User: %v was banned in chat: %v for: %v minutes", m.UserJoined, m.Chat, config.BanDurations)
+    time.AfterFunc(time.Duration(n)*time.Second, func() {
+        _, passed := passedUsers.Load(m.UserJoined.ID)
+        if !passed {
+            _, handled := handledUsers.Load(m.UserJoined.ID)
+            if !handled {
+                banDuration, e := getBanDuration()
+                if e != nil {
+                    log.Println(e)
                 }
-                passedUsers.Delete(m.UserJoined.ID)
-        })
+                chatMember := tb.ChatMember{User: m.UserJoined, RestrictedUntil: banDuration}
+                err := bot.Ban(m.Chat, &chatMember)
+                if err != nil {
+                    log.Println(err)
+                }
+
+                if config.PrintSuccessAndFail == "show" {
+                    _, err := bot.Edit(challengeMsg, config.AfterFailMessage)
+                    if err != nil {
+                        log.Println(err)
+                    }
+                } else if config.PrintSuccessAndFail == "del" {
+                    err := bot.Delete(m)
+                    if err != nil {
+                        log.Println(err)
+                    }
+                    err = bot.Delete(challengeMsg)
+                    if err != nil {
+                        log.Println(err)
+                    }
+                }
+
+                log.Printf("User: %v was banned in chat: %v for: %v minutes", m.UserJoined, m.Chat, config.BanDurations)
+            }
+            handledUsers.Delete(m.UserJoined.ID)
+        }
+        passedUsers.Delete(m.UserJoined.ID)
+    })
 }
 
 
@@ -268,6 +274,9 @@ func fakeChallenge(c *tb.Callback) {
         if err != nil {
                 log.Println(err)
         }
+
+        handledUsers.Store(c.Sender.ID, struct{}{})
+        
            log.Printf("User: %v was banned by fake button in chat: %v for: %v minutes", c.Sender, c.Message.Chat, config.FakeBanDurationMin)
 }
 
