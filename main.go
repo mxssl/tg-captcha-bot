@@ -217,39 +217,40 @@ func challengeUser(m *tb.Message) {
 
 // passChallenge is used when user passed the validation
 func passChallenge(c *tb.Callback) {
-        if c.Message.ReplyTo.Sender.ID != c.Sender.ID {
-                err := bot.Respond(c, &tb.CallbackResponse{Text: "This button isn't for you"})
-                if err != nil {
-                        log.Println(err)
-                }
-                return
-        }
-
-        passedUsers.Store(c.Sender.ID, struct{}{})
-
-        if config.PrintSuccessAndFail == "show" {
-                _, err := bot.Edit(c.Message, config.AfterSuccessMessage)
-                if err != nil {
-                        log.Println(err)
-                }
-        } else if config.PrintSuccessAndFail == "del" {
-                err := bot.Delete(c.Message)
-                if err != nil {
-                        log.Println(err)
-                }
-        }
-
-        log.Printf("User: %v passed the challenge in chat: %v", c.Sender, c.Message.Chat)
-        newChatMember := tb.ChatMember{User: c.Sender, RestrictedUntil: tb.Forever(), Rights: tb.Rights{CanSendMessages: true}}
-        err := bot.Promote(c.Message.Chat, &newChatMember)
+    if c.Message.ReplyTo.Sender.ID != c.Sender.ID {
+        err := bot.Respond(c, &tb.CallbackResponse{Text: "This button isn't for you"})
         if err != nil {
-                log.Println(err)
+            log.Println(err)
         }
-        err = bot.Respond(c, &tb.CallbackResponse{Text: "Validation passed!"})
+        return
+    }
+
+    passedUsers.Store(c.Sender.ID, struct{}{})
+
+    if config.PrintSuccessAndFail == "show" {
+        _, err := bot.Edit(c.Message, config.AfterSuccessMessage)
         if err != nil {
-                log.Println(err)
+            log.Println(err)
         }
+    } else if config.PrintSuccessAndFail == "del" {
+        err := bot.Delete(c.Message)
+        if err != nil {
+            log.Println(err)
+        }
+    }
+
+    log.Printf("User: %v passed the challenge in chat: %v", c.Sender, c.Message.Chat)
+    newChatMember := tb.ChatMember{User: c.Sender, RestrictedUntil: tb.Forever(), Rights: tb.Rights{CanSendMessages: true}}
+    err := bot.Promote(c.Message.Chat, &newChatMember)
+    if err != nil {
+        log.Println(err)
+    }
+    err = bot.Respond(c, &tb.CallbackResponse{Text: "Validation passed!"})
+    if err != nil {
+        log.Println(err)
+    }
 }
+
 
 
 
@@ -277,6 +278,11 @@ func fakeChallenge(c *tb.Callback) {
         
         if config.PrintSuccessAndFail == "del" {
             err := bot.Delete(c.Message)
+            if err != nil {
+                log.Println(err)
+            }
+        } else if config.PrintSuccessAndFail == "show" {
+            _, err := bot.Edit(c.Message, config.AfterFailMessage)
             if err != nil {
                 log.Println(err)
             }
