@@ -262,7 +262,7 @@ func fakeChallenge(c *tb.Callback) {
                 return
         }
 
-        //banDuration := time.Now().Add(24 * time.Hour).Unix()
+        
         banDuration := time.Now().Add(time.Duration(config.FakeBanDurationMin) * time.Minute).Unix()
 
         chatMember := tb.ChatMember{User: c.Sender, RestrictedUntil: banDuration}
@@ -273,6 +273,13 @@ func fakeChallenge(c *tb.Callback) {
         err = bot.Respond(c, &tb.CallbackResponse{Text: "Banned"})
         if err != nil {
                 log.Println(err)
+        }
+        
+        if config.PrintSuccessAndFail == "del" {
+            err := bot.Delete(c.Message)
+            if err != nil {
+                log.Println(err)
+            }
         }
 
         handledUsers.Store(c.Sender.ID, struct{}{})
