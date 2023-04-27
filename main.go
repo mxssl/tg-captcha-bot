@@ -237,6 +237,10 @@ func passChallenge(c *tb.Callback) {
         if err != nil {
             log.Println(err)
         }
+         err = bot.Delete(c.Message.ReplyTo)
+   	 if err != nil {
+            log.Println(err)
+        }
     }
 
     log.Printf("User: %v passed the challenge in chat: %v", c.Sender, c.Message.Chat)
@@ -280,6 +284,10 @@ func fakeChallenge(c *tb.Callback) {
             err := bot.Delete(c.Message)
             if err != nil {
                 log.Println(err)
+            }
+             err = bot.Delete(c.Message.ReplyTo)
+   	     if err != nil {
+        	log.Println(err)
             }
         } else if config.PrintSuccessAndFail == "show" {
             _, err := bot.Edit(c.Message, config.AfterFailMessage)
