@@ -160,8 +160,8 @@ func challengeUser(m *tb.Message) {
 
         //shuffledKeys := shuffleButtons(inlineKeys)
         shuffledKeys := shuffleButtons([]tb.InlineButton{challengeBtn, banBtn, banBtn2})
-
-       challengeMsg, err := bot.Reply(m, config.WelcomeMessage, &tb.ReplyMarkup{InlineKeyboard: shuffledKeys})
+        personalizedWelcomeMessage := fmt.Sprintf("%s, %s", m.UserJoined.FirstName, config.WelcomeMessage)
+        challengeMsg, err := bot.Reply(m, personalizedWelcomeMessage, &tb.ReplyMarkup{InlineKeyboard: shuffledKeys})
           if err != nil {
             log.Printf("Can't send challenge msg: %v", err)
             return
