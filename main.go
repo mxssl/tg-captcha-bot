@@ -99,21 +99,15 @@ func main() {
         <-signalChan
         log.Println("Shutdown signal received, exiting...")
 }
-
-
-//func shuffleButtons(buttons [][]tb.InlineButton) [][]tb.InlineButton {
-//      if rand.Intn(2) == 0 {
-//              return buttons
-//      }
-//      return [][]tb.InlineButton{
-//              {buttons[0][1], buttons[0][0]},
-//      }
-//}
 func shuffleButtons(buttons []tb.InlineButton) [][]tb.InlineButton {
     r := rand.New(rand.NewSource(time.Now().Unix()))
     shuffled := make([]tb.InlineButton, len(buttons))
     for i, idx := range r.Perm(len(buttons)) {
         shuffled[i] = buttons[idx]
+    }
+        // Checking if the first button is the button allowing the user to join the chat.
+    if shuffled[0].Data == "challenge_btn" {
+        shuffled[0], shuffled[1] = shuffled[1], shuffled[0]
     }
     return [][]tb.InlineButton{shuffled}
 }
