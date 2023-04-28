@@ -45,7 +45,8 @@ var bot *tb.Bot
 var tgtoken = "TGTOKEN"
 var configPath = "CONFIG_PATH"
 var handledUsers = sync.Map{}
-var botDisabled = false
+var botStates = sync.Map{}
+
 
 func init() {
         err := readConfig()
@@ -81,18 +82,32 @@ func main() {
 
         bot.Handle(tb.OnUserJoined, challengeUser)
         bot.Handle("/capcha", func(m *tb.Message) {
-        if m.Private() {
-                return
-        }
-        if isAdmin, _ := isUserAdmin(m.Chat, m.Sender); isAdmin {
-                botDisabled = !botDisabled
-                if botDisabled {
-                        bot.Send(m.Chat, "capcha disable.")
-                } else {
-                        bot.Send(m.Chat, "capcha enable.")
-                }
-            }
-        })
+	if !m.Private() {
+		chatMember, err := bot.ChatMemberOf(m.Chat, m.Sender)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		if chatMember.Role == tb.Creator || chatMember.Role == tb.Administrator {
+			currentState, _ := botStates.LoadOrStore(m.Chat.ID, true)
+			newState := !currentState.(bool)
+			botStates.Store(m.Chat.ID, newState)
+
+			var status string
+			if newState {
+				status = "enabled"
+			} else {
+				status = "disabled"
+			}
+			response := fmt.Sprintf("CAPTCHA bot is now %s in this chat.", status)
+			_, err := bot.Send(m.Chat, response)
+			if err != nil {
+				log.Println(err)
+			                }
+		                }
+	                }
+                })
+
 
         bot.Handle("/healthz", func(m *tb.Message) {
                 msg := "I'm OK"
@@ -131,9 +146,10 @@ func shuffleButtons(buttons []tb.InlineButton) [][]tb.InlineButton {
 }
 
 func challengeUser(m *tb.Message) {
-         if botDisabled {
-                return
-        }
+    botState, ok := botStates.Load(m.Chat.ID)
+    if ok && !botState.(bool) {
+        return
+    }
         if m.UserJoined.ID != m.Sender.ID {
                 return
         }
@@ -308,15 +324,6 @@ func fakeChallenge(c *tb.Callback) {
         handledUsers.Store(c.Sender.ID, struct{}{})
         
            log.Printf("User: %v was banned by fake button in chat: %v for: %v minutes", c.Sender, c.Message.Chat, config.FakeBanDurationMin)
-}
-
-func isUserAdmin(chat *tb.Chat, user *tb.User) (bool, error) {
-        chatMember, err := bot.ChatMemberOf(chat, user)
-        if err != nil {
-                return false, err
-        }
-
-        return chatMember.Role == tb.Creator || chatMember.Role == tb.Administrator, nil
 }
 
 
