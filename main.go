@@ -45,7 +45,7 @@ var bot *tb.Bot
 var tgtoken = "TGTOKEN"
 var configPath = "CONFIG_PATH"
 var handledUsers = sync.Map{}
-
+var botDisabled = false
 
 func init() {
         err := readConfig()
@@ -80,6 +80,19 @@ func main() {
         }
 
         bot.Handle(tb.OnUserJoined, challengeUser)
+        bot.Handle("/capcha", func(m *tb.Message) {
+        if m.Private() {
+                return
+        }
+        if isAdmin, _ := isUserAdmin(m.Chat, m.Sender); isAdmin {
+                botDisabled = !botDisabled
+                if botDisabled {
+                        bot.Send(m.Chat, "capcha disable.")
+                } else {
+                        bot.Send(m.Chat, "capcha enable.")
+                }
+            }
+        })
 
         bot.Handle("/healthz", func(m *tb.Message) {
                 msg := "I'm OK"
@@ -118,6 +131,9 @@ func shuffleButtons(buttons []tb.InlineButton) [][]tb.InlineButton {
 }
 
 func challengeUser(m *tb.Message) {
+         if botDisabled {
+                return
+        }
         if m.UserJoined.ID != m.Sender.ID {
                 return
         }
@@ -152,12 +168,6 @@ func challengeUser(m *tb.Message) {
                 Text:   config.FakeButton,
                 Data:   "ban_btn_2",
         }
-
-//      inlineKeys := [][]tb.InlineButton{
-//              {challengeBtn, banBtn, banBtn2},
-//      }
-
-        //shuffledKeys := shuffleButtons(inlineKeys)
         shuffledKeys := shuffleButtons([]tb.InlineButton{challengeBtn, banBtn, banBtn2})
         personalizedWelcomeMessage := fmt.Sprintf("%s, %s", m.UserJoined.FirstName, config.WelcomeMessage)
         challengeMsg, err := bot.Reply(m, personalizedWelcomeMessage, &tb.ReplyMarkup{InlineKeyboard: shuffledKeys})
@@ -300,6 +310,14 @@ func fakeChallenge(c *tb.Callback) {
            log.Printf("User: %v was banned by fake button in chat: %v for: %v minutes", c.Sender, c.Message.Chat, config.FakeBanDurationMin)
 }
 
+func isUserAdmin(chat *tb.Chat, user *tb.User) (bool, error) {
+        chatMember, err := bot.ChatMemberOf(chat, user)
+        if err != nil {
+                return false, err
+        }
+
+        return chatMember.Role == tb.Creator || chatMember.Role == tb.Administrator, nil
+}
 
 
 func readConfig() (err error) {
