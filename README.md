@@ -6,6 +6,14 @@
 <a href="https://github.com/mxssl/tg-captcha-bot/releases/latest"><img alt="GitHub All Releases" src="https://img.shields.io/github/downloads/mxssl/tg-captcha-bot/total"></a>
 <a href="https://hub.docker.com/r/mxssl/tg-captcha-bot"><img alt="Docker Pulls" src="https://img.shields.io/docker/pulls/mxssl/tg-captcha-bot"></a>
 
+# Fork information
+- Two fake buttons have been added, pressing on which the user gets banned.
+- Randomization of the button order. The original button for allowing access to the chat will never be the first in the list.
+- If print_success_and_fail_messages_strategy = "del" is selected in the configuration, the message about the user entering the chat is also deleted.
+- The user's first name (not @username) has been added to the welcome message.
+
+https://user-images.githubusercontent.com/1340282/235132015-f39f97c9-6d26-4051-847a-97664951108e.mp4
+
 # Telegram Captcha Bot
 
 Telegram bot that validates new users that enter supergroup. Validation works like a simple captcha. Bot written in Go (Golang).
