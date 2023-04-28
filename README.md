@@ -5,14 +5,14 @@
 <a href="https://github.com/mxssl/tg-captcha-bot/graphs/contributors"><img alt="GitHub contributors" src="https://img.shields.io/github/contributors/mxssl/tg-captcha-bot"></a>
 <a href="https://github.com/mxssl/tg-captcha-bot/releases/latest"><img alt="GitHub All Releases" src="https://img.shields.io/github/downloads/mxssl/tg-captcha-bot/total"></a>
 <a href="https://hub.docker.com/r/mxssl/tg-captcha-bot"><img alt="Docker Pulls" src="https://img.shields.io/docker/pulls/mxssl/tg-captcha-bot"></a>
-
+  
 # Fork information
 - Two fake buttons have been added, pressing on which the user gets banned.
 - Randomization of the button order. The original button for allowing access to the chat will never be the first in the list.
 - If print_success_and_fail_messages_strategy = "del" is selected in the configuration, the message about the user entering the chat is also deleted.
 - The user's first name (not @username) has been added to the welcome message.
 
-![tgbot](https://user-images.githubusercontent.com/1340282/235132815-bccf2e93-d19f-448b-96a7-587f07cf4d05.gif)
+![20230428_141709](https://user-images.githubusercontent.com/1340282/235134062-dba47c48-1a89-4567-887c-1cc81a662041.gif)
 
 # Telegram Captcha Bot
 
