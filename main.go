@@ -101,14 +101,19 @@ func main() {
 }
 func shuffleButtons(buttons []tb.InlineButton) [][]tb.InlineButton {
     r := rand.New(rand.NewSource(time.Now().Unix()))
+
+    humanIndex := r.Intn(2) + 1 // Guarantees that the index of the "I am human" button will be 1 or 2.
     shuffled := make([]tb.InlineButton, len(buttons))
-    for i, idx := range r.Perm(len(buttons)) {
-        shuffled[i] = buttons[idx]
+
+    shuffled[humanIndex] = buttons[0]
+
+    notHumanIndices := []int{0, 1, 2}
+    notHumanIndices = append(notHumanIndices[:humanIndex], notHumanIndices[humanIndex+1:]...)
+
+    for i, notHumanIndex := range notHumanIndices {
+        shuffled[notHumanIndex] = buttons[i+1]
     }
-        // Checking if the first button is the button allowing the user to join the chat.
-    if shuffled[0].Data == "challenge_btn" {
-        shuffled[0], shuffled[1] = shuffled[1], shuffled[0]
-    }
+
     return [][]tb.InlineButton{shuffled}
 }
 
