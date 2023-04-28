@@ -22,7 +22,10 @@ This bot has been tested on several supergroups (2000+ people) for a long time a
 
 ## Cloud hosted instance of the bot
 
-[@cloud_tg_captcha_bot](https://t.me/cloud_tg_captcha_bot)
+[@cloud_tg_captcha_bot](https://t.me/cloud_tg_captcha_bot) - original
+
+[@gate_troitsk_bot](https://t.me/gate_troitsk_bot) - fork
+
 
 ## How it works
 
