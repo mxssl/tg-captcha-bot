@@ -12,7 +12,7 @@
 - If print_success_and_fail_messages_strategy = "del" is selected in the configuration, the message about the user entering the chat is also deleted.
 - The user's first name (not @username) has been added to the welcome message.
 
-https://user-images.githubusercontent.com/1340282/235132015-f39f97c9-6d26-4051-847a-97664951108e.mp4
+![tgbot](https://user-images.githubusercontent.com/1340282/235132815-bccf2e93-d19f-448b-96a7-587f07cf4d05.gif)
 
 # Telegram Captcha Bot
 
