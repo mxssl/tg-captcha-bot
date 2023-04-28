@@ -11,6 +11,7 @@
 - Randomization of the button order. The original button for allowing access to the chat will never be the first in the list.
 - If print_success_and_fail_messages_strategy = "del" is selected in the configuration, the message about the user entering the chat is also deleted.
 - The user's first name (not @username) has been added to the welcome message.
+- Added the ability to disable and enable the bot for administrators using the /capcha command
 
 ![20230428_141709](https://user-images.githubusercontent.com/1340282/235134062-dba47c48-1a89-4567-887c-1cc81a662041.gif)
 
@@ -45,6 +46,7 @@ This bot has been tested on several supergroups (2000+ people) for a long time a
 ## Commands
 
 `/healthz` - check that the bot is working correctly
+`/capcha` - disable/enable capcha (from chat)
 
 ## Сustomization
 
