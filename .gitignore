@@ -3,3 +3,4 @@ dist/
 bot
 docker-compose.yml
 dist/
+bk/
