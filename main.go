@@ -124,7 +124,6 @@ if err != nil {
 }
 
 bot.Handle("/start", func(m *tb.Message) {
-        // Проверка, является ли чат приватным (личным чатом с ботом)
         if m.Chat.Type == tb.ChatPrivate {
                 _, err := bot.Send(m.Chat, helpMessage, tb.ModeMarkdown)
                 if err != nil {
@@ -134,7 +133,6 @@ bot.Handle("/start", func(m *tb.Message) {
 })
 
 bot.Handle("/help", func(m *tb.Message) {
-        // Проверка, является ли чат приватным (личным чатом с ботом)
         if m.Chat.Type == tb.ChatPrivate {
                 _, err := bot.Send(m.Chat, helpMessage, tb.ModeMarkdown)
                 if err != nil {
