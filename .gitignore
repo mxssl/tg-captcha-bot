@@ -1,5 +1,5 @@
 .idea
 dist/
 bot
-
+docker-compose.yml
 dist/
