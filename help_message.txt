@@ -1,15 +1,13 @@
-*Добро пожаловать!*
-Этот бот создан для защиты вашего чата.
+*Welcome!*
+This bot is designed to protect your chat.
 
-Список доступных команд:
-`/start` и `/help` - отобразить данное приветственное сообщение (работает только в личных сообщениях с ботом)
+List of available commands:
+/start and /help - display this welcome message (works only in private messages with the bot)
 
+For chat administrators:
+/captcha - enable/disable captcha when joining the chat.
+/attack - activate/deactivate attack mode.
 
-Для администраторов чата:
-`/captcha` - включить/отключить капчу при вступлении в чат.
-`/attack` - активировать/деактивировать режим атаки.
+In attack mode, all new chat participants receive a temporary 5-minute ban. This command is useful during a mass invasion of spammers in the chat.
 
-В режиме атаки все новые участники чата получают временный бан на 5 минут. Эта команда полезна при массовом вторжении спамеров в чат.
-
-
-Исходники бота: https://github.com/momai/tg-captcha-bot
+Bot source code: https://github.com/momai/tg-captcha-bot
