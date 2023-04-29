@@ -1,10 +1,14 @@
-<a href="https://goreportcard.com/report/github.com/mxssl/tg-captcha-bot"><img src="https://goreportcard.com/badge/github.com/mxssl/tg-captcha-bot" alt="Go Report Card"></a>
-<a href="https://github.com/mxssl/tg-captcha-bot/releases/latest"><img src="https://img.shields.io/github/go-mod/go-version/mxssl/tg-captcha-bot" alt="Version"></a>
-<a href="https://github.com/mxssl/tg-captcha-bot/releases/latest"><img alt="GitHub tag (latest by date)" src="https://img.shields.io/github/v/tag/mxssl/tg-captcha-bot"></a>
-<a href="https://github.com/mxssl/tg-captcha-bot/issues"><img alt="GitHub closed issues" src="https://img.shields.io/github/issues-closed-raw/mxssl/tg-captcha-bot"></a>
-<a href="https://github.com/mxssl/tg-captcha-bot/graphs/contributors"><img alt="GitHub contributors" src="https://img.shields.io/github/contributors/mxssl/tg-captcha-bot"></a>
-<a href="https://github.com/mxssl/tg-captcha-bot/releases/latest"><img alt="GitHub All Releases" src="https://img.shields.io/github/downloads/mxssl/tg-captcha-bot/total"></a>
-<a href="https://hub.docker.com/r/mxssl/tg-captcha-bot"><img alt="Docker Pulls" src="https://img.shields.io/docker/pulls/mxssl/tg-captcha-bot"></a>
+
+# Fork information
+- Two fake buttons have been added, pressing on which the user gets banned.
+- Randomization of the button order. The original button for allowing access to the chat will never be the first in the list.
+- If print_success_and_fail_messages_strategy = "del" is selected in the configuration, the message about the user entering the chat is also deleted.
+- The user's first name (not @username) has been added to the welcome message.
+- Added the ability to disable and enable the bot for administrators using the /capcha command
+- Attack mode. In this mode, all new chat participants receive a temporary 5-minute ban. This command is useful during a mass invasion of spammers in the chat.
+
+![20230428_141709](https://user-images.githubusercontent.com/1340282/235325727-c70cd98b-b395-4fd7-82c5-3a9cbb32ba28.gif)
+
 
 # Telegram Captcha Bot
 
@@ -14,7 +18,9 @@ This bot has been tested on several supergroups (2000+ people) for a long time a
 
 ## Cloud hosted instance of the bot
 
-[@cloud_tg_captcha_bot](https://t.me/cloud_tg_captcha_bot)
+[@gate_troitsk_bot](https://t.me/gate_troitsk_bot) - fork
+
+[@cloud_tg_captcha_bot](https://t.me/cloud_tg_captcha_bot) - original
 
 ## How it works
 
@@ -34,6 +40,12 @@ This bot has been tested on several supergroups (2000+ people) for a long time a
 ## Commands
 
 `/healthz` - check that the bot is working correctly
+
+`/captcha` - enable/disable captcha when joining the chat.
+
+`/attack` - activate/deactivate attack mode.
+
+In this mode, all new chat participants receive a temporary 5-minute ban. This command is useful during a mass invasion of spammers in the chat.
 
 ## Сustomization
 
