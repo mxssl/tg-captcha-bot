@@ -1,12 +1,12 @@
 # Config file for Telegram Captcha Bot
 
-captcha = "Капча: %s"
+captcha = "Captcha: %s"
 
-captcha_enable = "Активировано приветствие с капчей для новых пользователей."
+captcha_enable = "Greeting with captcha for new users activated."
 
-attack_mode = "Статус режима атаки: %s"
+attack_mode = "Attack mode status: %s"
 
-attack_mode_enable = "В режиме атаки, все новые участники получают бан на 5 минут. Приветственное сообщение не выводится. Для деактивации, повторите команду /attack"
+attack_mode_enable = "In attack mode, all new participants receive a 5-minute ban. The welcome message is not displayed. To deactivate, repeat the /attack command"
 
 # Button text
 button_text = "I'm not a robot!"
