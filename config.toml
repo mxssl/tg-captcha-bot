@@ -11,6 +11,8 @@ attack_mode_enable = "In attack mode, all new participants receive a 5-minute ba
 # Button text
 button_text = "I'm not a robot!"
 
+ban_button_text = "I'm robot!."
+
 # Bot sends this message to new users
 welcome_message = "Hello! This is the spam protection system. Please press the button within 30 seconds or you will be banned!"
 
