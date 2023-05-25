@@ -9,16 +9,16 @@ Obtain bot token from [@BotFather](https://t.me/BotFather)
 1. Clone the repo
 
 ```bash
-git clone https://github.com/mxssl/tg-captcha-bot.git
+git clone https://github.com/momai/tg-captcha-bot.git
 cd tg-captcha-bot
 ```
 
 2. Download bot binary and move it to needed directory
 
 ```bash
-wget https://github.com/mxssl/tg-captcha-bot/releases/download/v1.1.10/tg-captcha-bot_1.1.10_linux_amd64.tar.gz
+wget https://github.com/momai/tg-captcha-bot/archive/refs/tags/v.1.0.0.tar.gz
 
-tar xvzf tg-captcha-bot_1.1.10_linux_amd64.tar.gz
+tar v.1.0.0.tar.gz
 
 mv tg-captcha-bot /usr/local/bin/tg-captcha-bot
 
