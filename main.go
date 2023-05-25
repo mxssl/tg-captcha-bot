@@ -42,7 +42,6 @@ type Config struct {
         AttackMode          string `mapstructure:"attack_mode"`
         AttackModeEnable    string `mapstructure:"attack_mode_enable"`
         CasEnable           string `mapstructure:"cas_enable"`
-        CasBanDuration      int64 `mapstructure:"cas_ban_duration"`
 
 }
 
@@ -244,31 +243,31 @@ func challengeUser(m *tb.Message) {
                         return
                 }
         // Check if CAS is enabled and the user is in CAS
-        if config.CasEnable == "yes" {
-        isBannedByCas, casStatus, err := checkUserCas(m.UserJoined.ID)
-        if err != nil {
-                log.Printf("Error checking user: %v with CAS in chat: %v, error: %v", m.UserJoined, m.Chat, err)
+if config.CasEnable == "yes" {
+    isBannedByCas, casStatus, err := checkUserCas(m.UserJoined.ID)
+    if err != nil {
+        log.Printf("Error checking user: %v with CAS in chat: %v, error: %v", m.UserJoined, m.Chat, err)
+    } else {
+        if casStatus == "" {
+            log.Printf("User: %v was checked by CAS in chat: %v, user is not in CAS blacklist", m.UserJoined, m.Chat)
         } else {
-                if casStatus == "" {
-                log.Printf("User: %v was checked by CAS in chat: %v, user is not in CAS blacklist", m.UserJoined, m.Chat)
-                } else {
-                log.Printf("User: %v was checked by CAS in chat: %v, status: %v", m.UserJoined, m.Chat, casStatus)
-                }
-                if isBannedByCas {
-                banDurationCas, e := getBanDurationCas()
-                if e != nil {
-                 log.Println(e)
-                  }
-               chatMember := tb.ChatMember{User: m.UserJoined, RestrictedUntil: banDurationCas}
-                    err := bot.Ban(m.Chat, &chatMember)
-                    if err != nil {
-                        log.Println(err)
-                  }
-                    log.Printf("User: %v was banned by CAS in chat: %v", m.UserJoined, m.Chat) // Log message
-                  return
-                }
-            }
+            log.Printf("User: %v was checked by CAS in chat: %v, status: %v", m.UserJoined, m.Chat, casStatus)
         }
+        if isBannedByCas {
+            banDuration, e := getBanDuration()
+            if e != nil {
+                log.Println(e)
+            }
+            chatMember := tb.ChatMember{User: m.UserJoined, RestrictedUntil: banDuration}
+            err := bot.Ban(m.Chat, &chatMember)
+            if err != nil {
+                log.Println(err)
+            }
+            log.Printf("User: %v was banned by CAS in chat: %v", m.UserJoined, m.Chat) // Log message
+            return
+        }
+    }
+}
 // end CAS
 
         }
@@ -493,19 +492,6 @@ func getBanDuration() (int64, error) {
         }
 
         return time.Now().Add(time.Duration(n) * time.Minute).Unix(), nil
-}
-
-func getBanDurationCas() (int64, error) {
-        if config.BanDurationsCas == "forever" {
-                return tb.Forever(), nil
-        }
-
-        n, err := strconv.ParseInt(config.BanDurationsCas, 10, 64)
-        if err != nil {
-                return 0, err
-        }
-
-        return time.Now().Add(time.DurationCas(n) * time.Minute).Unix(), nil
 }
 
 func initSocks5Client() (*http.Client, error) {
