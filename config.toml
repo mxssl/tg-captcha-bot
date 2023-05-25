@@ -1,5 +1,7 @@
 # Config file for Telegram Captcha Bot
 
+cas_enable = "yes"
+
 captcha = "Captcha: %s"
 
 captcha_enable = "Greeting with captcha for new users activated."
