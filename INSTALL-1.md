@@ -21,7 +21,7 @@ version: '3'
 
 services:
   tg-captcha-bot:
-    image: momai/tg-captcha-bot:v1.1.10
+    image: momai/tg-captcha-bot:latest
     volumes:
       - ./config.toml:/config.toml
     restart: unless-stopped
