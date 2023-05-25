@@ -1,7 +1,7 @@
 BINARY_NAME=bot
 CURRENT_DIR=$(shell pwd)
 TAG=$(shell git name-rev --tags --name-only $(shell git rev-parse HEAD))
-DOCKER_REGISTRY=mxssl
+DOCKER_REGISTRY=momai
 export GO111MODULE=on
 
 .PHONY: all build clean lint critic test
