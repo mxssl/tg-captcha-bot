@@ -29,12 +29,6 @@ services:
       TGTOKEN: <your_telegram_bot_token_here>
 ```
 
-3. Pull the container
-
-```bash
-docker compose pull
-```
-
 4. Run the container
 
 ```bash
