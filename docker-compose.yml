@@ -1,10 +1,11 @@
 version: '3'
 
 services:
-  tg-captcha-bot:
+  tg-captcha-bot2:
     image: momai/tg-captcha-bot:latest
     volumes:
       - ./config.toml:/config.toml
+      - ./help_message.txt:/help_message.txt
     restart: unless-stopped
     environment:
-      TGTOKEN: <your_telegram_bot_token_here>
+      TGTOKEN: $TGTOKEN

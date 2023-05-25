@@ -15,9 +15,7 @@ cd tg-captcha-bot
 ```
 
 2. Add a token from BotFather to env variable in docker-compose.yml
-
-```yaml
-version: '3'
+```version: '3'
 
 services:
   tg-captcha-bot:
@@ -27,11 +25,11 @@ services:
     image: tg-captcha-bot:latest
     volumes:
       - ./config.toml:/config.toml
+      - ./help_message.txt:/help_message.txt
     restart: unless-stopped
     environment:
       TGTOKEN: <your_telegram_bot_token_here>
 ```
-
 3. Build a Docker container
 
 ```bash

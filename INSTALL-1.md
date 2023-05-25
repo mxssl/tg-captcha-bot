@@ -14,20 +14,8 @@ git clone https://github.com/momai/tg-captcha-bot.git
 cd tg-captcha-bot
 ```
 
-2. Add a token from BotFather to env variable in docker-compose.yml
-
-```yaml
-version: '3'
-
-services:
-  tg-captcha-bot:
-    image: momai/tg-captcha-bot:latest
-    volumes:
-      - ./config.toml:/config.toml
-    restart: unless-stopped
-    environment:
-      TGTOKEN: <your_telegram_bot_token_here>
-```
+2. Add a token from BotFather to env variable
+```mv .env.sample .env```
 
 3. Run the container
 
