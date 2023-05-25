@@ -41,6 +41,8 @@ type Config struct {
         CaptchaEnable        string `mapstructure:"captcha_enable"`
         AttackMode          string `mapstructure:"attack_mode"`
         AttackModeEnable    string `mapstructure:"attack_mode_enable"`
+        CasEnable           string `mapstructure:"cas_enable"`
+
 }
 
 var config Config
@@ -240,6 +242,34 @@ func challengeUser(m *tb.Message) {
                         log.Printf("User: %v already restricted in chat: %v", m.UserJoined, m.Chat)
                         return
                 }
+        // Check if CAS is enabled and the user is in CAS
+        if config.CasEnable == "yes" {
+        isBannedByCas, casStatus, err := checkUserCas(m.UserJoined.ID)
+        if err != nil {
+                log.Printf("Error checking user: %v with CAS in chat: %v, error: %v", m.UserJoined, m.Chat, err)
+        } else {
+                if casStatus == "" {
+                log.Printf("User: %v was checked by CAS in chat: %v, user is not in CAS blacklist", m.UserJoined, m.Chat)
+                } else {
+                log.Printf("User: %v was checked by CAS in chat: %v, status: %v", m.UserJoined, m.Chat, casStatus)
+                }
+                if isBannedByCas {
+                banDuration, e := getBanDuration()
+                if e != nil {
+                 log.Println(e)
+                  }
+               chatMember := tb.ChatMember{User: m.UserJoined, RestrictedUntil: banDuration}
+                    err := bot.Ban(m.Chat, &chatMember)
+                    if err != nil {
+                        log.Println(err)
+                  }
+                    log.Printf("User: %v was banned by CAS in chat: %v", m.UserJoined, m.Chat) // Log message
+                  return
+                }
+            }
+        }
+// end CAS
+
         }
 
         newChatMember := tb.ChatMember{User: m.UserJoined, RestrictedUntil: tb.Forever(), Rights: tb.Rights{CanSendMessages: false}}
