@@ -4,7 +4,7 @@ cas_enable = "yes"
 
 captcha = "Captcha: %s"
 
-captcha_enable = "Greeting with captcha for new users activated."
+captcha_enable = "Greeting with captcha for new users activated.."
 
 attack_mode = "Attack mode status: %s"
 
