@@ -10,7 +10,7 @@
 1. Clone the repo
 
 ```bash
-git clone https://github.com/mxssl/tg-captcha-bot.git
+git clone https://github.com/momai/tg-captcha-bot.git
 cd tg-captcha-bot
 ```
 
@@ -21,7 +21,7 @@ version: '3'
 
 services:
   tg-captcha-bot:
-    image: mxssl/tg-captcha-bot:v1.1.10
+    image: momai/tg-captcha-bot:v1.1.10
     volumes:
       - ./config.toml:/config.toml
     restart: unless-stopped
