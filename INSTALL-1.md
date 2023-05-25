@@ -29,13 +29,13 @@ services:
       TGTOKEN: <your_telegram_bot_token_here>
 ```
 
-4. Run the container
+3. Run the container
 
 ```bash
 docker compose up -d
 ```
 
-5. Check that the bot started correctly
+4. Check that the bot started correctly
 
 ```bash
 docker compose ps
