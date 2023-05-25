@@ -42,6 +42,7 @@ type Config struct {
         AttackMode          string `mapstructure:"attack_mode"`
         AttackModeEnable    string `mapstructure:"attack_mode_enable"`
         CasEnable           string `mapstructure:"cas_enable"`
+        CasBanDuration      int64 `mapstructure:"cas_ban_duration"`
 
 }
 
@@ -254,11 +255,11 @@ func challengeUser(m *tb.Message) {
                 log.Printf("User: %v was checked by CAS in chat: %v, status: %v", m.UserJoined, m.Chat, casStatus)
                 }
                 if isBannedByCas {
-                banDuration, e := getBanDuration()
+                banDurationCas, e := getBanDurationCas()
                 if e != nil {
                  log.Println(e)
                   }
-               chatMember := tb.ChatMember{User: m.UserJoined, RestrictedUntil: banDuration}
+               chatMember := tb.ChatMember{User: m.UserJoined, RestrictedUntil: banDurationCas}
                     err := bot.Ban(m.Chat, &chatMember)
                     if err != nil {
                         log.Println(err)
@@ -492,6 +493,19 @@ func getBanDuration() (int64, error) {
         }
 
         return time.Now().Add(time.Duration(n) * time.Minute).Unix(), nil
+}
+
+func getBanDurationCas() (int64, error) {
+        if config.BanDurationsCas == "forever" {
+                return tb.Forever(), nil
+        }
+
+        n, err := strconv.ParseInt(config.BanDurationsCas, 10, 64)
+        if err != nil {
+                return 0, err
+        }
+
+        return time.Now().Add(time.DurationCas(n) * time.Minute).Unix(), nil
 }
 
 func initSocks5Client() (*http.Client, error) {
