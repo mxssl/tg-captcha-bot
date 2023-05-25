@@ -1,3 +1,8 @@
+# Telegram Captcha Bot
+
+Telegram bot that validates new users that enter supergroup. Validation works like a simple captcha. Bot written in Go (Golang).
+
+This bot has been tested on several supergroups (2000+ people) for a long time and has shown its effectiveness against spammers.
 
 # Fork information
 - Two fake buttons have been added, pressing on which the user gets banned.
@@ -6,15 +11,9 @@
 - The user's first name (not @username) has been added to the welcome message.
 - Added the ability to disable and enable the bot for administrators using the /capcha command
 - Attack mode. In this mode, all new chat participants receive a temporary 5-minute ban. This command is useful during a mass invasion of spammers in the chat.
+- Added CAS antispam protection. 
 
 ![20230428_141709](https://user-images.githubusercontent.com/1340282/235325727-c70cd98b-b395-4fd7-82c5-3a9cbb32ba28.gif)
-
-
-# Telegram Captcha Bot
-
-Telegram bot that validates new users that enter supergroup. Validation works like a simple captcha. Bot written in Go (Golang).
-
-This bot has been tested on several supergroups (2000+ people) for a long time and has shown its effectiveness against spammers.
 
 ## Cloud hosted instance of the bot
 
