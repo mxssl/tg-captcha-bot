@@ -14,35 +14,29 @@ git clone https://github.com/momai/tg-captcha-bot.git
 cd tg-captcha-bot
 ```
 
-2. Add a token from BotFather to env variable in docker-compose.yml
-```version: '3'
-
-services:
-  tg-captcha-bot:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: tg-captcha-bot:latest
-    volumes:
-      - ./config.toml:/config.toml
-      - ./help_message.txt:/help_message.txt
-    restart: unless-stopped
-    environment:
-      TGTOKEN: <your_telegram_bot_token_here>
+2. remove ```docker-compose.yml``` and rename 
+```bash
+mv docker-compose.local.yml docker-compose..yml
 ```
-3. Build a Docker container
+
+3. To rename the file env.sample to .env, you can use the following command:
+```mv .env.sample .env```
+After renaming the file, open the newly created .env file in a text editor and add your Telegram bot token to it.
+
+
+4. Build a Docker container
 
 ```bash
 docker compose build
 ```
 
-4. Run the container
+5. Run the container
 
 ```bash
 docker compose up -d
 ```
 
-5. Check that the bot started correctly
+6. Check that the bot started correctly
 
 ```bash
 docker compose ps
