@@ -1,6 +1,6 @@
 FROM golang:1.20.4-alpine3.17 as builder
 
-WORKDIR /go/src/github.com/mxssl/tg-captcha-bot
+WORKDIR /go/src/github.com/momai/tg-captcha-bot
 COPY . .
 
 # Install external dependcies
@@ -17,6 +17,6 @@ RUN CGO_ENABLED=0 \
 FROM alpine:3.18.0
 WORKDIR /
 RUN apk add --no-cache ca-certificates
-COPY --from=builder /go/src/github.com/mxssl/tg-captcha-bot .
+COPY --from=builder /go/src/github.com/momai/tg-captcha-bot .
 RUN chmod +x bot
 CMD ["./bot"]
