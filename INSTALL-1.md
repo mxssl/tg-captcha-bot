@@ -15,7 +15,10 @@ cd tg-captcha-bot
 ```
 
 2. To rename the file env.sample to .env, you can use the following command:
-```mv .env.sample .env```
+```bash
+mv .env.sample .env
+```
+
 After renaming the file, open the newly created .env file in a text editor and add your Telegram bot token to it.
 
 3. Run the container
