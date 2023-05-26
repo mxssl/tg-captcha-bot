@@ -1,0 +1,51 @@
+# Config file for Telegram Captcha Bot
+
+cas_enable = "yes"
+
+captcha = "Капча: %s"
+
+captcha_enable = "Активировано приветствие с капчей для новых пользователей."
+
+attack_mode = "Статус режима атаки: %s"
+
+attack_mode_enable = "В режиме атаки, все новые участники получают бан на 5 минут. Приветственное сообщение не выводится. Для деактивации, повторите команду /attack"
+
+# Button text
+button_text = "Я человек."
+
+ban_button_text = "Я спамер."
+
+# Bot sends this message to new users
+welcome_message = "привет! Это защита от спама. У вас есть 30 секунд, чтобы нажать правильную кнопку. В противном случае, вы будете заблокированы на 1 час."
+
+# Edit welcome message with this text if user passed validation
+after_success_message = "Пользователь прошел проверку."
+
+# Edit welcome message with this text if user failed validation
+after_fail_message = "Пользователь не прошёл проверку и был забанен."
+
+# Show success and failure messages or delete them. Pick "show" or "del"
+print_success_and_fail_messages_strategy = "del"
+
+# During this time in seconds, the new user have to press the captha button
+welcome_timeout = "30"
+
+# If the new user does not press the button, the bot will ban the user for this duration of time. Can be "forever" or number of minutes ("10")
+ban_duration = "10"
+
+fake_ban_duration_min = "600"
+
+# Do you want to use a socks5 proxy server? Can be "yes" or "no"
+use_socks5_proxy = "no"
+
+# Socks5 proxy server IP address
+socks5_address = "1.1.1.1"
+
+# Socks5 proxy server TCP port
+socks5_port = "1080"
+
+# Socks5 proxy server username
+socks5_login = "login"
+
+# Socks5 proxy server password
+socks5_password = "password"
