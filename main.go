@@ -42,6 +42,7 @@ type Config struct {
         AttackMode          string `mapstructure:"attack_mode"`
         AttackModeEnable    string `mapstructure:"attack_mode_enable"`
         CasEnable           string `mapstructure:"cas_enable"`
+	CasBanDuration      string `mapstructure:"cas_ban_duration"`
 
 }
 
@@ -211,6 +212,7 @@ func shuffleButtons(buttons []tb.InlineButton) [][]tb.InlineButton {
     return [][]tb.InlineButton{shuffled}
 }
 
+
 func challengeUser(m *tb.Message) {
      attackEnabled, _ := attackMode.Load(m.Chat.ID)
      if attackEnabled != nil && attackEnabled.(bool) {
@@ -242,9 +244,10 @@ func challengeUser(m *tb.Message) {
                         log.Printf("User: %v already restricted in chat: %v", m.UserJoined, m.Chat)
                         return
                 }
+
         // Check if CAS is enabled and the user is in CAS
 if config.CasEnable == "yes" {
-    isBannedByCas, casStatus, err := checkUserCas(m.UserJoined.ID)
+    isBannedByCas, casStatus, err := mockCheckUserCas(m.UserJoined.ID)
     if err != nil {
         log.Printf("Error checking user: %v with CAS in chat: %v, error: %v", m.UserJoined, m.Chat, err)
     } else {
@@ -254,7 +257,7 @@ if config.CasEnable == "yes" {
             log.Printf("User: %v was checked by CAS in chat: %v, status: %v", m.UserJoined, m.Chat, casStatus)
         }
         if isBannedByCas {
-            banDuration, e := getBanDuration()
+            banDuration, e := getCasBanDuration()
             if e != nil {
                 log.Println(e)
             }
@@ -493,6 +496,26 @@ func getBanDuration() (int64, error) {
 
         return time.Now().Add(time.Duration(n) * time.Minute).Unix(), nil
 }
+
+
+func getCasBanDuration() (int64, error) {
+//    return time.Now().Add(time.Duration(config.CasBanDuration) * time.Minute).Unix(), nil
+
+        if config.CasBanDuration == "forever" {
+                return tb.Forever(), nil
+        }
+
+        n, err := strconv.ParseInt(config.CasBanDuration, 10, 64)
+        if err != nil {
+                return 0, err
+        }
+
+        return time.Now().Add(time.Duration(n) * time.Minute).Unix(), nil
+
+
+}
+
+
 
 func initSocks5Client() (*http.Client, error) {
         addr := fmt.Sprintf("%s:%s", config.Socks5Address, config.Socks5Port)
