@@ -247,7 +247,7 @@ func challengeUser(m *tb.Message) {
 
         // Check if CAS is enabled and the user is in CAS
 if config.CasEnable == "yes" {
-    isBannedByCas, casStatus, err := mockCheckUserCas(m.UserJoined.ID)
+    isBannedByCas, casStatus, err := checkUserCas(m.UserJoined.ID)
     if err != nil {
         log.Printf("Error checking user: %v with CAS in chat: %v, error: %v", m.UserJoined, m.Chat, err)
     } else {

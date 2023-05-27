@@ -34,12 +34,10 @@ func checkUserCas(userID int64) (bool, string, error) {
 
 	return casResponse.Ok && casResponse.Result.Status == "ok", casResponse.Result.Status, nil
 }
+//nolint:unused
 func mockCheckUserCas(userID int64) (bool, string, error) {
-	// Здесь вы можете контролировать, что возвращает функция.
-	// Например, для тестирования сценария, когда пользователь находится в CAS:
-	if userID == 5745126537 { // Замените 123456 на ID пользователя, которого вы хотите тестировать
+	if userID == 5745126537 { 
 		return true, "ok", nil
 	}
-	// Для всех остальных пользователей возвращаем, что они не в CAS
 	return false, "", nil
 }
