@@ -2,6 +2,8 @@
 
 cas_enable = "yes"
 
+cas_ban_duration = 43200  # 1 month
+
 captcha = "Капча: %s"
 
 captcha_enable = "Активировано приветствие с капчей для новых пользователей."
