@@ -42,7 +42,7 @@ type Config struct {
         AttackMode          string `mapstructure:"attack_mode"`
         AttackModeEnable    string `mapstructure:"attack_mode_enable"`
         CasEnable           string `mapstructure:"cas_enable"`
-	CasBanDuration      string `mapstructure:"cas_ban_duration"`
+	    CasBanDuration      string `mapstructure:"cas_ban_duration"`
 
 } 
 
