@@ -44,7 +44,7 @@ type Config struct {
         CasEnable           string `mapstructure:"cas_enable"`
 	CasBanDuration      string `mapstructure:"cas_ban_duration"`
 
-}
+} 
 
 var config Config
 var passedUsers = sync.Map{}
