@@ -240,6 +240,12 @@ func challengeUser(m *tb.Message) {
     if chatMember.RestrictedUntil != 0 {
         // Пользователь уже забанен, пропускаем вывод капчи
         log.Printf("User: %v is already restricted in chat: %v", m.UserJoined, m.Chat)
+	        if config.PrintSuccessAndFail == "del" {
+                        err := bot.Delete(m)
+                        if err != nil {
+                            log.Println(err)
+                        }
+                    }
         return
     }
 
