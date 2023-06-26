@@ -38,3 +38,7 @@ This bot has been tested on several supergroups (2000+ people) for a long time a
 ## Сustomization
 
 You can change several bot's settings (welcome message, ban duration, socks5 proxy server) through the configuration file `config.toml`
+
+## Alternatives / Forks
+
+- [momai/tg-captcha-bot](https://github.com/momai/tg-captcha-bot) - fork of `tg-captcha-bot` with interesting additional features.
