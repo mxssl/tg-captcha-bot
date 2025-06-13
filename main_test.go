@@ -14,7 +14,9 @@ func TestReadConfig(t *testing.T) {
 
 func TestCorrectToken(t *testing.T) {
 	token := "123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
-	os.Setenv("TEST_TOKEN", token)
+	if err := os.Setenv("TEST_TOKEN", token); err != nil {
+		t.Fatalf("Failed to set env variable: %v", err)
+	}
 
 	v, err := getToken("TEST_TOKEN")
 	if err != nil {
@@ -28,7 +30,9 @@ func TestCorrectToken(t *testing.T) {
 
 func TestIncorrectToken(t *testing.T) {
 	token := "a123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
-	os.Setenv("TEST_TOKEN", token)
+	if err := os.Setenv("TEST_TOKEN", token); err != nil {
+		t.Fatalf("Failed to set env variable: %v", err)
+	}
 
 	v, _ := getToken("TEST_TOKEN")
 

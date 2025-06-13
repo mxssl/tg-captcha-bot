@@ -143,12 +143,13 @@ func challengeUser(m *tb.Message) {
 				log.Println(err)
 			}
 
-			if config.PrintSuccessAndFail == "show" {
+			switch config.PrintSuccessAndFail {
+			case "show":
 				_, err := bot.Edit(challengeMsg, config.AfterFailMessage)
 				if err != nil {
 					log.Println(err)
 				}
-			} else if config.PrintSuccessAndFail == "del" {
+			case "del":
 				err := bot.Delete(m)
 				if err != nil {
 					log.Println(err)
@@ -176,12 +177,13 @@ func passChallenge(c *tb.Callback) {
 	}
 	passedUsers.Store(c.Sender.ID, struct{}{})
 
-	if config.PrintSuccessAndFail == "show" {
+	switch config.PrintSuccessAndFail {
+	case "show":
 		_, err := bot.Edit(c.Message, config.AfterSuccessMessage)
 		if err != nil {
 			log.Println(err)
 		}
-	} else if config.PrintSuccessAndFail == "del" {
+	case "del":
 		err := bot.Delete(c.Message)
 		if err != nil {
 			log.Println(err)
