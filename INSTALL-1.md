@@ -17,11 +17,11 @@ cd tg-captcha-bot
 2. Add a token from BotFather to env variable in docker-compose.yml
 
 ```yaml
-version: '3'
+version: "3"
 
 services:
   tg-captcha-bot:
-    image: mxssl/tg-captcha-bot:v1.1.10
+    image: mxssl/tg-captcha-bot:v1.1.13
     volumes:
       - ./config.toml:/config.toml
     restart: unless-stopped

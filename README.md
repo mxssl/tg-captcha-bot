@@ -1,7 +1,3 @@
-<a href="https://goreportcard.com/report/github.com/mxssl/tg-captcha-bot"><img src="https://goreportcard.com/badge/github.com/mxssl/tg-captcha-bot" alt="Go Report Card"></a>
-<a href="https://github.com/mxssl/tg-captcha-bot/releases/latest"><img src="https://img.shields.io/github/go-mod/go-version/mxssl/tg-captcha-bot" alt="Version"></a>
-<a href="https://github.com/mxssl/tg-captcha-bot/releases/latest"><img alt="GitHub tag (latest by date)" src="https://img.shields.io/github/v/tag/mxssl/tg-captcha-bot"></a>
-<a href="https://github.com/mxssl/tg-captcha-bot/issues"><img alt="GitHub closed issues" src="https://img.shields.io/github/issues-closed-raw/mxssl/tg-captcha-bot"></a>
 <a href="https://github.com/mxssl/tg-captcha-bot/graphs/contributors"><img alt="GitHub contributors" src="https://img.shields.io/github/contributors/mxssl/tg-captcha-bot"></a>
 <a href="https://github.com/mxssl/tg-captcha-bot/releases/latest"><img alt="GitHub All Releases" src="https://img.shields.io/github/downloads/mxssl/tg-captcha-bot/total"></a>
 <a href="https://hub.docker.com/r/mxssl/tg-captcha-bot"><img alt="Docker Pulls" src="https://img.shields.io/docker/pulls/mxssl/tg-captcha-bot"></a>
