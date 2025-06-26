@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: tg-captcha-bot:latest
+    image: "mxssl/tg-captcha-bot:v1.1.11"
     volumes:
       - ./config.toml:/config.toml
     restart: unless-stopped
