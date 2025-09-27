@@ -40,5 +40,7 @@ github-release:
 docker-release:
 	@echo "Registry: ${DOCKER_REGISTRY}"
 	@echo "TAG: ${TAG}"
-	docker build --tag ${DOCKER_REGISTRY}/tg-captcha-bot:${TAG} .
+	docker build --tag ${DOCKER_REGISTRY}/tg-captcha-bot:${TAG} --tag ${DOCKER_REGISTRY}/tg-captcha-bot:latest .
 	docker push ${DOCKER_REGISTRY}/tg-captcha-bot:${TAG}
+	docker push ${DOCKER_REGISTRY}/tg-captcha-bot:latest
+
