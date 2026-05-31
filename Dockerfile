@@ -1,4 +1,4 @@
-FROM golang:1.26-alpine as builder
+FROM golang:1.26.3-alpine3.23 AS builder
 
 WORKDIR /go/src/github.com/mxssl/tg-captcha-bot
 COPY . .
@@ -14,7 +14,7 @@ RUN CGO_ENABLED=0 \
 	go build -v -o bot
 
 # Copy compiled binary to clear Alpine Linux image
-FROM alpine:3.23
+FROM alpine:3.23.0
 WORKDIR /
 RUN apk add --no-cache ca-certificates
 COPY --from=builder /go/src/github.com/mxssl/tg-captcha-bot .
