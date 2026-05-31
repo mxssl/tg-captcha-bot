@@ -1,6 +1,6 @@
 BINARY_NAME=bot
 CURRENT_DIR=$(shell pwd)
-TAG=$(shell git name-rev --tags --name-only $(shell git rev-parse HEAD))
+TAG=$(shell git describe --tags --exact-match)
 DOCKER_REGISTRY=mxssl
 export GO111MODULE=on
 
