@@ -31,11 +31,11 @@ update-deps:
 
 github-release-dry:
 	@echo "TAG: ${TAG}"
-	goreleaser release --rm-dist --snapshot --skip-publish
+	goreleaser release --clean --snapshot
 
 github-release:
 	@echo "TAG: ${TAG}"
-	goreleaser release --rm-dist
+	goreleaser release --clean
 
 docker-release:
 	@echo "Registry: ${DOCKER_REGISTRY}"
@@ -44,4 +44,3 @@ docker-release:
 		--tag ${DOCKER_REGISTRY}/tg-captcha-bot:${TAG} \
 		--tag ${DOCKER_REGISTRY}/tg-captcha-bot:latest \
 		--push .
-
