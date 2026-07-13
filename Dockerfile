@@ -1,4 +1,4 @@
-FROM golang:1.26.4-alpine3.23 AS builder
+FROM golang:1.26.5-alpine3.23 AS builder
 
 WORKDIR /go/src/github.com/mxssl/tg-captcha-bot
 COPY . .
