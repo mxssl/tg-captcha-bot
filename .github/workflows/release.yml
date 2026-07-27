@@ -9,7 +9,7 @@ jobs:
   docker-release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7.0.0
+      - uses: actions/checkout@v7.0.1
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4.2.0
       - name: Set up Docker Buildx
@@ -22,7 +22,7 @@ jobs:
   github-release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7.0.0
+      - uses: actions/checkout@v7.0.1
       - name: Set up Go
         uses: actions/setup-go@v6.5.0
         with:
