@@ -56,14 +56,16 @@ Create a `config.toml` file with the following options:
 | `after_fail_message`          | string | `"User didn't pass the validation and was banned."` | Message shown after failed verification                                   |
 | `success_message_strategy`    | string | `"show"`                                            | Action after success: `"show"` (edit message) or `"del"` (delete message) |
 | `fail_message_strategy`       | string | `"del"`                                             | Action after failure: `"show"` (edit message) or `"del"` (delete message) |
-| `welcome_timeout`             | string | `"30"`                                              | Seconds user has to press the button                                      |
-| `ban_duration`                | string | `"forever"`                                         | Ban duration: `"forever"` or number of minutes (e.g., `"10"`)             |
+| `welcome_timeout`             | string | `"30"`                                              | Integer seconds from 1 to 9223372036 to press the button                    |
+| `ban_duration`                | string | `"forever"`                                         | `"forever"` or integer minutes from 1 to 527040 (366 days)                  |
 | `delete_join_message_on_fail` | string | `"yes"`                                             | Delete system join/leave messages for failed users: `"yes"` or `"no"`     |
 | `use_socks5_proxy`            | string | `"no"`                                              | Enable SOCKS5 proxy: `"yes"` or `"no"`                                    |
 | `socks5_address`              | string | `"1.1.1.1"`                                         | SOCKS5 proxy IP address                                                   |
 | `socks5_port`                 | string | `"1080"`                                            | SOCKS5 proxy port                                                         |
 | `socks5_login`                | string | `"login"`                                           | SOCKS5 proxy username                                                     |
 | `socks5_password`             | string | `"password"`                                        | SOCKS5 proxy password                                                     |
+
+Invalid, missing, zero, negative, or out-of-range durations prevent the bot from starting. Use `"forever"` explicitly for permanent bans.
 
 ### Example Configuration
 

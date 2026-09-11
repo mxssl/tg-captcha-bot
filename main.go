@@ -36,6 +36,9 @@ type Config struct {
 	Socks5Port             string `mapstructure:"socks5_port"`
 	Socks5Login            string `mapstructure:"socks5_login"`
 	Socks5Password         string `mapstructure:"socks5_password"`
+
+	welcomeTimeout time.Duration
+	banDuration    time.Duration
 }
 
 var config Config
@@ -130,18 +133,10 @@ func challengeUser(m *tb.Message) {
 		return
 	}
 
-	n, err := strconv.ParseInt(config.WelcomeTimeout, 10, 64)
-	if err != nil {
-		log.Println(err)
-	}
-	time.AfterFunc(time.Duration(n)*time.Second, func() {
+	time.AfterFunc(config.welcomeTimeout, func() {
 		_, passed := passedUsers.Load(m.UserJoined.ID)
 		if !passed {
-			banDuration, e := getBanDuration()
-			if e != nil {
-				log.Println(e)
-			}
-			chatMember := tb.ChatMember{User: m.UserJoined, RestrictedUntil: banDuration}
+			chatMember := tb.ChatMember{User: m.UserJoined, RestrictedUntil: getBanDuration()}
 			// Mark user as banned for cleanup of "removed" message
 			if config.DeleteJoinMsgOnFail == "yes" {
 				bannedUsers.Store(m.UserJoined.ID, struct{}{})
@@ -242,10 +237,39 @@ func readConfig() (err error) {
 	if err = v.ReadInConfig(); err != nil {
 		return err
 	}
-	if err = v.Unmarshal(&config); err != nil {
+	var parsed Config
+	if err = v.Unmarshal(&parsed); err != nil {
 		return err
 	}
+	if err = parsed.validateDurations(); err != nil {
+		return err
+	}
+	config = parsed
 	return
+}
+
+func (c *Config) validateDurations() error {
+	// Bound the integer before multiplication to avoid time.Duration overflow.
+	const maxTimeoutSeconds = int64(1<<63-1) / int64(time.Second)
+	n, err := strconv.ParseInt(c.WelcomeTimeout, 10, 64)
+	if err != nil || n < 1 || n > maxTimeoutSeconds {
+		return errors.Errorf("welcome_timeout must be an integer from 1 to %d seconds, got %q", maxTimeoutSeconds, c.WelcomeTimeout)
+	}
+	c.welcomeTimeout = time.Duration(n) * time.Second
+
+	if c.BanDurations == "forever" {
+		c.banDuration = 0
+		return nil
+	}
+	// Telegram treats bans shorter than 30 seconds or longer than 366 days
+	// as permanent. Whole minutes therefore must be within this range.
+	const maxBanMinutes = 366 * 24 * 60
+	n, err = strconv.ParseInt(c.BanDurations, 10, 64)
+	if err != nil || n < 1 || n > maxBanMinutes {
+		return errors.Errorf("ban_duration must be \"forever\" or an integer from 1 to %d minutes, got %q", maxBanMinutes, c.BanDurations)
+	}
+	c.banDuration = time.Duration(n) * time.Minute
+	return nil
 }
 
 func getToken(key string) (string, error) {
@@ -265,17 +289,11 @@ func getToken(key string) (string, error) {
 	return token, nil
 }
 
-func getBanDuration() (int64, error) {
+func getBanDuration() int64 {
 	if config.BanDurations == "forever" {
-		return tb.Forever(), nil
+		return tb.Forever()
 	}
-
-	n, err := strconv.ParseInt(config.BanDurations, 10, 64)
-	if err != nil {
-		return 0, err
-	}
-
-	return time.Now().Add(time.Duration(n) * time.Minute).Unix(), nil
+	return time.Now().Add(config.banDuration).Unix()
 }
 
 func initSocks5Client() (*http.Client, error) {
