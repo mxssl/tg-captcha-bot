@@ -22,10 +22,12 @@ success_message_strategy = "show"
 # "del" - delete the challenge message
 fail_message_strategy = "del"
 
-# During this time in seconds, the new user have to press the captha button
+# Seconds the new user has to press the captcha button: integer from 1 to 9223372036.
+# Invalid durations prevent the bot from starting.
 welcome_timeout = "30"
 
-# If the new user does not press the button, the bot will ban the user for this duration of time. Can be "forever" or number of minutes ("10")
+# Ban duration: "forever" or an integer from 1 to 527040 minutes (366 days).
+# Longer numeric bans are rejected because Telegram treats them as permanent.
 ban_duration = "forever"
 
 # Delete the "user joined the group" system message when verification fails. Can be "yes" or "no"
