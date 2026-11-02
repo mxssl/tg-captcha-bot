@@ -5,7 +5,7 @@ go 1.26.3
 require (
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/viper v1.21.0
-	golang.org/x/net v0.61.0
+	golang.org/x/net v0.62.0
 	gopkg.in/tucnak/telebot.v2 v2.5.0
 )
 
